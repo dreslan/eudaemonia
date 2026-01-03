@@ -57,9 +57,13 @@ class Achievement(AchievementBase):
 
 class UserBase(BaseModel):
     username: str
+    display_name: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
+
+class UserUpdate(BaseModel):
+    display_name: Optional[str] = None
 
 class User(UserBase):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))

@@ -3,11 +3,13 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import type { Quest, Achievement } from '../types';
 import { CheckCircle, Circle, Trophy, Skull } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Dashboard: React.FC = () => {
   const [quests, setQuests] = useState<Quest[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,19 +43,19 @@ const Dashboard: React.FC = () => {
                 </div>
                 
                 <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-wider text-dcc-system">
-                    Welcome, Crawler!
+                    Welcome, {user?.display_name || user?.username || "Crawler"}!
                 </h1>
                 
                 <div className="space-y-4 max-w-xl">
                     <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
-                        "Oh, look at you. Fresh meat. You haven't done <span className="text-red-600 dark:text-red-400 italic">anything</span> yet."
+                        Oh, look at you. Fresh meat. You haven't done <span className="text-red-600 dark:text-red-400 italic">anything</span> yet.
                     </p>
                     <p className="text-base text-gray-600 dark:text-gray-400">
-                        "You have zero quests. Zero achievements. You are statistically insignificant. 
-                        But don't worry, the dungeon will grind you down regardless of your participation."
+                        You have zero quests. Zero achievements. You are statistically insignificant. 
+                        But don't worry, the dungeon will grind you down regardless of your participation.
                     </p>
                     <p className="text-base text-gray-600 dark:text-gray-400">
-                        "Why don't you try scanning one of those QR codes or clicking a button before I get bored and terminate your session?"
+                        Why don't you try <Link to="/tools" className="text-orange-600 dark:text-orange-400 hover:underline">scanning a QR code</Link> or clicking a button before I get bored and terminate your session?
                     </p>
                 </div>
 

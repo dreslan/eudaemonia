@@ -87,4 +87,20 @@ class LocalDatabase:
         self._save_data(data)
         return user
 
+    def update_user(self, username: str, updates: Dict[str, Any]) -> Optional[UserInDB]:
+        data = self._load_data()
+        users = data.get("users", [])
+        for i, user in enumerate(users):
+            if user["username"] == username:
+                # Update fields
+                for key, value in updates.items():
+                    if value is not None:
+                        user[key] = value
+                
+                updated_user = UserInDB(**user)
+                users[i] = updated_user.model_dump(mode='json')
+                self._save_data(data)
+                return updated_user
+        return None
+
 db = LocalDatabase()

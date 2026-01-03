@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
-from models import Quest, QuestCreate, QuestUpdate, Achievement, AchievementCreate, AchievementUpdate, BulkVisibilityUpdate, User, UserCreate, Token, UserInDB
+from models import Quest, QuestCreate, QuestUpdate, Achievement, AchievementCreate, AchievementUpdate, BulkVisibilityUpdate, User, UserCreate, UserUpdate, Token, UserInDB
 from database import db
 import random
 from datetime import date, datetime, timezone, timedelta
@@ -267,6 +267,7 @@ def get_profile(current_user: UserInDB = Depends(get_current_user)):
     
     return {
         "username": current_user.username,
+        "display_name": current_user.display_name,
         "level": 1 + (len(achievements) // 5),
         "stats": {
             "quests_active": len([q for q in quests if q['status'] == 'active']),
@@ -275,6 +276,13 @@ def get_profile(current_user: UserInDB = Depends(get_current_user)):
         },
         "recent_achievements": achievements[-5:]
     }
+
+@app.put("/profile", response_model=User)
+def update_profile(user_update: UserUpdate, current_user: UserInDB = Depends(get_current_user)):
+    updated_user = db.update_user(current_user.username, user_update.model_dump(exclude_unset=True))
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return updated_user
 
 @app.get("/public/profile/{username}")
 def get_public_profile(username: str):
@@ -292,6 +300,7 @@ def get_public_profile(username: str):
     
     return {
         "username": user.username,
+        "display_name": user.display_name,
         "level": 1 + (len(public_achievements) // 5),
         "stats": {
             "quests_active": len([q for q in public_quests if q['status'] == 'active']),

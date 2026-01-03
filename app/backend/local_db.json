@@ -10,6 +10,18 @@
             "id": "1af1c280-9e7f-4d59-a1e8-30b2f4ba99bc",
             "created_at": "2026-01-02T19:59:53.957250",
             "progress": 0
+        },
+        {
+            "title": "suck husbands dick real good",
+            "dimension": "physical",
+            "status": "completed",
+            "tags": [],
+            "victory_condition": "Husband creams all over face",
+            "is_hidden": false,
+            "id": "53937549-f6eb-4a42-a8f4-05ed2272445a",
+            "created_at": "2026-01-02T22:02:40.070516",
+            "progress": 0,
+            "user_id": "6fa214e4-9767-4c62-af50-f9d93132c754"
         }
     ],
     "achievements": [
@@ -57,14 +69,61 @@
             "ai_reward": "A pat on the back. Not really.",
             "quest_id": "1af1c280-9e7f-4d59-a1e8-30b2f4ba99bc",
             "id": "acd7d808-abac-4bfc-91aa-dea3a9eb1387"
+        },
+        {
+            "title": "sucked husbands dick but no face cream yet",
+            "context": "Update for quest: suck husbands dick real good",
+            "date_completed": "2026-01-03T03:03:06.489000Z",
+            "dimension": "physical",
+            "is_hidden": false,
+            "image_url": "https://source.unsplash.com/random/300x400?fantasy,card",
+            "ai_description": "CONGRATULATIONS, CRAWLER! You have managed to Update for quest: suck husbands dick real good. I suppose that's adequate, for a hairless ape.",
+            "ai_reward": "+500 XP and a sense of impending doom.",
+            "quest_id": "53937549-f6eb-4a42-a8f4-05ed2272445a",
+            "id": "4ec40d5b-c54a-4162-8c55-8e1eadb2b9b8",
+            "user_id": "6fa214e4-9767-4c62-af50-f9d93132c754"
+        },
+        {
+            "title": "sucked to completion!",
+            "context": "Update for quest: suck husbands dick real good",
+            "date_completed": "2026-01-03T03:03:14.249000Z",
+            "dimension": "physical",
+            "is_hidden": false,
+            "image_url": "https://source.unsplash.com/random/300x400?fantasy,card",
+            "ai_description": "OH LOOK, YOU DID SOMETHING. You have managed to Update for quest: suck husbands dick real good. You want a cookie? Too bad.",
+            "ai_reward": "A pat on the back. Not really.",
+            "quest_id": "53937549-f6eb-4a42-a8f4-05ed2272445a",
+            "id": "37315222-9aee-4643-bfbc-66ae62591200",
+            "user_id": "6fa214e4-9767-4c62-af50-f9d93132c754"
+        },
+        {
+            "title": "Quest Complete: suck husbands dick real good",
+            "context": "Completed the quest 'suck husbands dick real good'. Victory Condition: Husband creams all over face",
+            "date_completed": "2026-01-03T03:03:26.290846Z",
+            "dimension": "physical",
+            "is_hidden": false,
+            "image_url": "https://source.unsplash.com/random/300x400?fantasy,card",
+            "ai_description": "NEW ACHIEVEMENT! You have managed to Completed the quest 'suck husbands dick real good'. Victory Condition: Husband creams all over face. Don't let it go to your head.",
+            "ai_reward": "+500 XP.",
+            "quest_id": "53937549-f6eb-4a42-a8f4-05ed2272445a",
+            "id": "a3a490a9-d98a-4d9c-ba8f-c4a8a52c26a7",
+            "user_id": "6fa214e4-9767-4c62-af50-f9d93132c754"
         }
     ],
     "users": [
         {
             "username": "husband",
+            "display_name": "Husband",
             "id": "a500eadf-4037-41f7-a635-aafbbeedaac9",
             "disabled": false,
             "hashed_password": "$argon2id$v=19$m=65536,t=3,p=4$8l5LiRFi7J3z/l/Ludeasw$dpqs4IQqgvInZg5+g2Yn+0QwQ30zNI3n3a55Fj1NlNE"
+        },
+        {
+            "username": "wife",
+            "display_name": "Wife",
+            "id": "6fa214e4-9767-4c62-af50-f9d93132c754",
+            "disabled": false,
+            "hashed_password": "$argon2id$v=19$m=65536,t=3,p=4$JEQIobT2XgshJATA2FsL4Q$hlUPb4I+oQ2d835VyL9A+hf7cRZXX6ZcFuu2I3jvsWY"
         }
     ]
 }

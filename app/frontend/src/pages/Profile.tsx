@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import type { Achievement, Quest } from '../types';
-import { LayoutGrid, List, Search, Eye, EyeOff, Skull } from 'lucide-react';
+import { LayoutGrid, List, Search, Eye, EyeOff, Skull, Edit2, Check, X } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Profile: React.FC = () => {
+  const { updateUser } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [quests, setQuests] = useState<Quest[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
@@ -12,6 +14,8 @@ const Profile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'quests' | 'achievements'>('quests');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [displayName, setDisplayName] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,6 +26,7 @@ const Profile: React.FC = () => {
             axios.get('http://localhost:8000/achievements')
         ]);
         setProfile(profileRes.data);
+        setDisplayName(profileRes.data.display_name || profileRes.data.username);
         setQuests(questsRes.data);
         setAchievements(achievementsRes.data);
       } catch (error) {
@@ -32,6 +37,18 @@ const Profile: React.FC = () => {
     };
     fetchData();
   }, []);
+
+  const handleUpdateProfile = async () => {
+    try {
+      const res = await axios.put('http://localhost:8000/profile', { display_name: displayName });
+      const updatedProfile = { ...profile, display_name: res.data.display_name };
+      setProfile(updatedProfile);
+      updateUser(updatedProfile);
+      setIsEditingProfile(false);
+    } catch (error) {
+      console.error("Error updating profile", error);
+    }
+  };
 
   const toggleQuestVisibility = async (e: React.MouseEvent, quest: Quest) => {
     e.preventDefault(); // Prevent navigation
@@ -71,9 +88,40 @@ const Profile: React.FC = () => {
     <div className="space-y-6">
       <div className="bg-white dark:bg-dcc-card shadow rounded-lg p-6 text-center border dark:border-dcc-system/20">
         <div className="w-24 h-24 bg-orange-100 dark:bg-orange-900/50 rounded-full mx-auto flex items-center justify-center text-3xl font-bold text-orange-600 dark:text-dcc-system mb-4">
-          {profile.username.charAt(0)}
+          {(profile.display_name || profile.username).charAt(0).toUpperCase()}
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{profile.username}</h1>
+        
+        <div className="flex items-center justify-center gap-2 mb-1">
+            {isEditingProfile ? (
+                <div className="flex items-center gap-2">
+                    <input 
+                        type="text" 
+                        value={displayName} 
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        className="border dark:border-gray-600 rounded px-2 py-1 text-gray-900 dark:text-white bg-transparent"
+                    />
+                    <button onClick={handleUpdateProfile} className="text-green-600 hover:text-green-700">
+                        <Check className="w-5 h-5" />
+                    </button>
+                    <button onClick={() => { setIsEditingProfile(false); setDisplayName(profile.display_name || profile.username); }} className="text-red-600 hover:text-red-700">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+            ) : (
+                <div className="flex flex-col items-center">
+                    <div className="flex items-center gap-2">
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{profile.display_name || profile.username}</h1>
+                        <button onClick={() => setIsEditingProfile(true)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                            <Edit2 className="w-4 h-4" />
+                        </button>
+                    </div>
+                    {profile.display_name && (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">@{profile.username}</p>
+                    )}
+                </div>
+            )}
+        </div>
+        
         <p className="text-gray-500 dark:text-gray-400">Level {profile.level} Adventurer</p>
         
         <div className="mt-4">
@@ -111,13 +159,13 @@ const Profile: React.FC = () => {
                 
                 <div className="space-y-4 max-w-xl">
                     <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
-                        "Is this your profile? Really? <span className="text-red-600 dark:text-red-400 italic">Embarrassing</span>."
+                        Is this your profile? Really? <span className="text-red-600 dark:text-red-400 italic">Embarrassing</span>.
                     </p>
                     <p className="text-base text-gray-600 dark:text-gray-400">
-                        "You have nothing to show. No quests. No achievements. Just a blank page staring back at you."
+                        You have nothing to show. No quests. No achievements. Just a blank page staring back at you.
                     </p>
                     <p className="text-base text-gray-600 dark:text-gray-400">
-                        "Go do something. Anything. Before I delete your account out of pity."
+                        Go do something. Anything. Before I delete your account out of pity.
                     </p>
                 </div>
 

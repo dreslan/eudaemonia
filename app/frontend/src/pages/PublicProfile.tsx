@@ -46,10 +46,11 @@ const PublicProfile: React.FC = () => {
     <div className="space-y-6">
       <div className="bg-white dark:bg-dcc-card shadow rounded-lg p-6 text-center border dark:border-dcc-system/20">
         <div className="w-24 h-24 bg-orange-100 dark:bg-orange-900/50 rounded-full mx-auto flex items-center justify-center text-3xl font-bold text-orange-600 dark:text-dcc-system mb-4">
-          {profile.username.charAt(0)}
+          {(profile.display_name || profile.username).charAt(0).toUpperCase()}
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{profile.username}</h1>
-        <p className="text-gray-500 dark:text-gray-400">Level {profile.level} Adventurer</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{profile.display_name || profile.username}</h1>
+        {profile.display_name && <p className="text-sm text-gray-500 dark:text-gray-400">@{profile.username}</p>}
+        <p className="text-gray-500 dark:text-gray-400 mt-1">Level {profile.level} Adventurer</p>
         
         <div className="grid grid-cols-3 gap-4 mt-6 border-t dark:border-gray-700 pt-6">
           <div>
@@ -80,13 +81,13 @@ const PublicProfile: React.FC = () => {
                 
                 <div className="space-y-4 max-w-xl">
                     <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
-                        "This crawler is absolutely <span className="text-red-600 dark:text-red-400 italic">useless</span>."
+                        This crawler is absolutely <span className="text-red-600 dark:text-red-400 italic">useless</span>.
                     </p>
                     <p className="text-base text-gray-600 dark:text-gray-400">
-                        "They have achieved nothing. They have completed nothing. They are a waste of server space."
+                        They have achieved nothing. They have completed nothing. They are a waste of server space.
                     </p>
                     <p className="text-base text-gray-600 dark:text-gray-400">
-                        "Move along. Find someone who actually plays the game."
+                        Move along. Find someone who actually plays the game.
                     </p>
                 </div>
             </div>
