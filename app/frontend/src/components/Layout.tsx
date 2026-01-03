@@ -1,22 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
-import { LayoutDashboard, PlusCircle, Trophy, User, QrCode, Moon, Sun } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Trophy, User, QrCode, Moon, Sun, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 const Layout: React.FC = () => {
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('theme');
-    return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  });
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [darkMode]);
+  const { logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-dcc-dark text-gray-900 dark:text-gray-100 transition-colors duration-200">
@@ -52,12 +42,20 @@ const Layout: React.FC = () => {
                 </Link>
               </div>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center space-x-2">
                 <button 
-                    onClick={() => setDarkMode(!darkMode)}
+                    onClick={toggleTheme}
                     className="p-2 rounded-full text-gray-500 dark:text-dcc-system hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
+                    title="Toggle Theme"
                 >
-                    {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                    {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                </button>
+                <button 
+                    onClick={logout}
+                    className="p-2 rounded-full text-gray-500 dark:text-dcc-system hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
+                    title="Logout"
+                >
+                    <LogOut className="w-5 h-5" />
                 </button>
             </div>
           </div>

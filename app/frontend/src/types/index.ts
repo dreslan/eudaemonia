@@ -10,6 +10,7 @@ export interface Quest {
     created_at: string;
     progress: number;
     victory_condition?: string;
+    is_hidden?: boolean;
 }
 
 export interface QuestCreate {
@@ -30,6 +31,7 @@ export interface Achievement {
     ai_description?: string;
     ai_reward?: string;
     quest_id?: string;
+    is_hidden?: boolean;
 }
 
 export interface AchievementCreate {

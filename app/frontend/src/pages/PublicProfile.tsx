@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import type { Achievement, Quest } from '../types';
-import { LayoutGrid, List, Search, Eye, EyeOff, Skull } from 'lucide-react';
+import { LayoutGrid, List, Search, Skull } from 'lucide-react';
 
-const Profile: React.FC = () => {
+const PublicProfile: React.FC = () => {
+  const { username } = useParams<{ username: string }>();
   const [profile, setProfile] = useState<any>(null);
   const [quests, setQuests] = useState<Quest[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
@@ -16,44 +17,18 @@ const Profile: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profileRes, questsRes, achievementsRes] = await Promise.all([
-            axios.get('http://localhost:8000/profile'),
-            axios.get('http://localhost:8000/quests'),
-            axios.get('http://localhost:8000/achievements')
-        ]);
-        setProfile(profileRes.data);
-        setQuests(questsRes.data);
-        setAchievements(achievementsRes.data);
+        const res = await axios.get(`http://localhost:8000/public/profile/${username}`);
+        setProfile(res.data);
+        setQuests(res.data.quests);
+        setAchievements(res.data.achievements || res.data.recent_achievements);
       } catch (error) {
         console.error("Error fetching data", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
-  }, []);
-
-  const toggleQuestVisibility = async (e: React.MouseEvent, quest: Quest) => {
-    e.preventDefault(); // Prevent navigation
-    try {
-        const updatedQuest = { ...quest, is_hidden: !quest.is_hidden };
-        await axios.patch(`http://localhost:8000/quests/${quest.id}`, { is_hidden: updatedQuest.is_hidden });
-        setQuests(quests.map(q => q.id === quest.id ? updatedQuest : q));
-    } catch (error) {
-        console.error("Error updating quest visibility", error);
-    }
-  };
-
-  const toggleAchievementVisibility = async (e: React.MouseEvent, achievement: Achievement) => {
-    e.preventDefault(); // Prevent navigation
-    try {
-        const updatedAchievement = { ...achievement, is_hidden: !achievement.is_hidden };
-        await axios.patch(`http://localhost:8000/achievements/${achievement.id}`, { is_hidden: updatedAchievement.is_hidden });
-        setAchievements(achievements.map(a => a.id === achievement.id ? updatedAchievement : a));
-    } catch (error) {
-        console.error("Error updating achievement visibility", error);
-    }
-  };
+    if (username) fetchData();
+  }, [username]);
 
   if (loading || !profile) return <div className="text-center py-10 text-gray-500 dark:text-gray-400">Loading profile...</div>;
 
@@ -75,12 +50,6 @@ const Profile: React.FC = () => {
         </div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{profile.username}</h1>
         <p className="text-gray-500 dark:text-gray-400">Level {profile.level} Adventurer</p>
-        
-        <div className="mt-4">
-            <Link to={`/public/${profile.username}`} className="text-sm text-orange-600 dark:text-dcc-system hover:underline flex items-center justify-center gap-1">
-                View Public Profile
-            </Link>
-        </div>
         
         <div className="grid grid-cols-3 gap-4 mt-6 border-t dark:border-gray-700 pt-6">
           <div>
@@ -106,25 +75,19 @@ const Profile: React.FC = () => {
                 </div>
                 
                 <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-wider text-dcc-system">
-                    Pathetic Display
+                    Nothing to See Here
                 </h1>
                 
                 <div className="space-y-4 max-w-xl">
                     <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
-                        "Is this your profile? Really? <span className="text-red-600 dark:text-red-400 italic">Embarrassing</span>."
+                        "This crawler is absolutely <span className="text-red-600 dark:text-red-400 italic">useless</span>."
                     </p>
                     <p className="text-base text-gray-600 dark:text-gray-400">
-                        "You have nothing to show. No quests. No achievements. Just a blank page staring back at you."
+                        "They have achieved nothing. They have completed nothing. They are a waste of server space."
                     </p>
                     <p className="text-base text-gray-600 dark:text-gray-400">
-                        "Go do something. Anything. Before I delete your account out of pity."
+                        "Move along. Find someone who actually plays the game."
                     </p>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 mt-8">
-                    <Link to="/quests/new" className="px-6 py-3 bg-dcc-system text-white dark:text-black font-bold text-base uppercase tracking-wider rounded hover:bg-orange-700 dark:hover:bg-orange-400 transition-colors shadow-md">
-                        Start Quest
-                    </Link>
                 </div>
             </div>
         </div>
@@ -184,15 +147,8 @@ const Profile: React.FC = () => {
             viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredQuests.map(quest => (
-                        <Link key={quest.id} to={`/quests/${quest.id}`} className={`block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border dark:border-gray-700 p-4 relative group ${quest.is_hidden ? 'opacity-75' : ''}`}>
-                            <button
-                                onClick={(e) => toggleQuestVisibility(e, quest)}
-                                className="absolute top-2 right-2 p-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity"
-                                title={quest.is_hidden ? "Show on public profile" : "Hide from public profile"}
-                            >
-                                {quest.is_hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </button>
-                            <div className="flex justify-between items-start mb-2 pr-6">
+                        <div key={quest.id} className="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border dark:border-gray-700 p-4">
+                            <div className="flex justify-between items-start mb-2">
                                 <h3 className="font-bold text-lg text-gray-900 dark:text-white">{quest.title}</h3>
                                 <span className={`px-2 py-1 text-xs rounded-full ${quest.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'}`}>
                                     {quest.status}
@@ -203,9 +159,8 @@ const Profile: React.FC = () => {
                                 <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 px-2 py-0.5 rounded">
                                     {quest.dimension}
                                 </span>
-                                {quest.is_hidden && <span className="ml-2 text-xs text-gray-400">(Hidden)</span>}
                             </div>
-                        </Link>
+                        </div>
                     ))}
                 </div>
             ) : (
@@ -217,17 +172,15 @@ const Profile: React.FC = () => {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dimension</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Victory Condition</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Visibility</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-dcc-card divide-y divide-gray-200 dark:divide-gray-700">
                             {filteredQuests.map(quest => (
-                                <tr key={quest.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 ${quest.is_hidden ? 'opacity-75' : ''}`}>
+                                <tr key={quest.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <Link to={`/quests/${quest.id}`} className="text-orange-600 dark:text-dcc-system hover:underline font-medium">
+                                        <span className="text-orange-600 dark:text-dcc-system font-medium">
                                             {quest.title}
-                                        </Link>
-                                        {quest.is_hidden && <span className="ml-2 text-xs text-gray-400">(Hidden)</span>}
+                                        </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${quest.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'}`}>
@@ -240,15 +193,6 @@ const Profile: React.FC = () => {
                                     <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
                                         {quest.victory_condition}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button
-                                            onClick={(e) => toggleQuestVisibility(e, quest)}
-                                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                                            title={quest.is_hidden ? "Show on public profile" : "Hide from public profile"}
-                                        >
-                                            {quest.is_hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                        </button>
-                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -259,14 +203,7 @@ const Profile: React.FC = () => {
             viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredAchievements.map((ach: Achievement) => (
-                        <Link key={ach.id} to={`/achievements/${ach.id}`} className={`block bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow border-t-4 border-yellow-400 dark:border-dcc-gold group relative ${ach.is_hidden ? 'opacity-75' : ''}`}>
-                        <button
-                            onClick={(e) => toggleAchievementVisibility(e, ach)}
-                            className="absolute top-2 right-2 z-10 p-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity"
-                            title={ach.is_hidden ? "Show on public profile" : "Hide from public profile"}
-                        >
-                            {ach.is_hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
+                        <Link to={`/public/achievement/${ach.id}`} key={ach.id} className="block bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow border-t-4 border-yellow-400 dark:border-dcc-gold group cursor-pointer">
                         <div className="h-48 bg-gray-200 dark:bg-gray-700 relative overflow-hidden">
                             {ach.image_url && <img src={ach.image_url} alt={ach.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />}
                             <div className="absolute top-0 right-0 bg-yellow-400 dark:bg-dcc-gold text-xs font-bold px-2 py-1 uppercase tracking-wider text-yellow-900 dark:text-black transform rotate-0">
@@ -274,10 +211,7 @@ const Profile: React.FC = () => {
                             </div>
                         </div>
                         <div className="p-4">
-                            <h3 className="font-black text-lg mb-1 text-gray-900 dark:text-white uppercase tracking-wide">
-                                {ach.title}
-                                {ach.is_hidden && <span className="ml-2 text-xs text-gray-400 font-normal normal-case">(Hidden)</span>}
-                            </h3>
+                            <h3 className="font-black text-lg mb-1 text-gray-900 dark:text-white uppercase tracking-wide">{ach.title}</h3>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-mono">{new Date(ach.date_completed).toLocaleDateString()} {new Date(ach.date_completed).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
                             <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 italic border-l-2 border-gray-200 dark:border-gray-600 pl-2">"{ach.ai_description || ach.context}"</p>
                         </div>
@@ -292,32 +226,21 @@ const Profile: React.FC = () => {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Context</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Visibility</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-dcc-card divide-y divide-gray-200 dark:divide-gray-700">
                             {filteredAchievements.map(ach => (
-                                <tr key={ach.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 ${ach.is_hidden ? 'opacity-75' : ''}`}>
+                                <tr key={ach.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <Link to={`/achievements/${ach.id}`} className="text-orange-600 dark:text-dcc-system hover:underline font-bold">
+                                        <Link to={`/public/achievement/${ach.id}`} className="text-orange-600 dark:text-dcc-system font-bold hover:underline">
                                             {ach.title}
                                         </Link>
-                                        {ach.is_hidden && <span className="ml-2 text-xs text-gray-400">(Hidden)</span>}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">
                                         {new Date(ach.date_completed).toLocaleDateString()}
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
                                         {ach.context}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button
-                                            onClick={(e) => toggleAchievementVisibility(e, ach)}
-                                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                                            title={ach.is_hidden ? "Show on public profile" : "Hide from public profile"}
-                                        >
-                                            {ach.is_hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -332,4 +255,4 @@ const Profile: React.FC = () => {
   );
 };
 
-export default Profile;
+export default PublicProfile;

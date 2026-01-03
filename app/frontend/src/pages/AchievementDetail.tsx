@@ -9,31 +9,60 @@ const AchievementDetail: React.FC = () => {
   const [achievement, setAchievement] = useState<Achievement | null>(null);
   const [linkedQuest, setLinkedQuest] = useState<Quest | null>(null);
   const [showAiSide, setShowAiSide] = useState(false);
+  const isPublic = window.location.pathname.startsWith('/public');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const achRes = await axios.get(`http://localhost:8000/achievements/${id}`);
+        const url = isPublic 
+            ? `http://localhost:8000/public/achievements/${id}`
+            : `http://localhost:8000/achievements/${id}`;
+            
+        const achRes = await axios.get(url);
         setAchievement(achRes.data);
 
         if (achRes.data.quest_id) {
-            const questRes = await axios.get(`http://localhost:8000/quests/${achRes.data.quest_id}`);
-            setLinkedQuest(questRes.data);
+            // For public view, we might need a public quest endpoint too if we want to show quest details.
+            // But for now, let's try fetching. If it fails (401), we just won't show the quest.
+            // Or we can add a public quest endpoint.
+            // Let's assume for now we only show quest info if we can fetch it.
+            try {
+                const questUrl = isPublic
+                    ? `http://localhost:8000/public/quests/${achRes.data.quest_id}` // We need to add this if we want it to work
+                    : `http://localhost:8000/quests/${achRes.data.quest_id}`;
+                
+                // Note: We haven't added /public/quests/:id yet. 
+                // So this might fail for public. 
+                // Let's skip quest fetching for public for now unless we add the endpoint.
+                if (!isPublic) {
+                    const questRes = await axios.get(questUrl);
+                    setLinkedQuest(questRes.data);
+                }
+            } catch (qError) {
+                console.log("Could not fetch linked quest", qError);
+            }
         }
       } catch (error) {
         console.error("Error fetching achievement details", error);
       }
     };
     fetchData();
-  }, [id]);
+  }, [id, isPublic]);
 
   if (!achievement) return <div>Loading...</div>;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link to="/" className="inline-flex items-center text-orange-600 hover:text-orange-800 dark:text-dcc-system dark:hover:text-white mb-4">
-        <ArrowLeft className="w-4 h-4 mr-1" /> Back to Dashboard
-      </Link>
+      {!isPublic && (
+        <Link to="/" className="inline-flex items-center text-orange-600 hover:text-orange-800 dark:text-dcc-system dark:hover:text-white mb-4">
+            <ArrowLeft className="w-4 h-4 mr-1" /> Back to Dashboard
+        </Link>
+      )}
+      {isPublic && (
+         <button onClick={() => window.history.back()} className="inline-flex items-center text-orange-600 hover:text-orange-800 dark:text-dcc-system dark:hover:text-white mb-4">
+            <ArrowLeft className="w-4 h-4 mr-1" /> Back
+         </button>
+      )}
 
       <div 
         onClick={() => setShowAiSide(!showAiSide)}

@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import type { Quest, Achievement } from '../types';
-import { CheckCircle, Circle, Trophy } from 'lucide-react';
+import { CheckCircle, Circle, Trophy, Skull } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const [quests, setQuests] = useState<Quest[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -17,6 +18,8 @@ const Dashboard: React.FC = () => {
         setAchievements(achievementsRes.data);
       } catch (error) {
         console.error("Error fetching data", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -24,6 +27,48 @@ const Dashboard: React.FC = () => {
 
   const activeQuests = quests.filter(q => q.status === 'active');
   const completedQuests = quests.filter(q => q.status === 'completed');
+
+  if (loading) {
+    return <div className="text-center py-10 text-gray-500 dark:text-gray-400">Loading dungeon data...</div>;
+  }
+
+  if (quests.length === 0 && achievements.length === 0) {
+    return (
+        <div className="max-w-3xl mx-auto mt-10 p-8 bg-white dark:bg-dcc-card text-gray-900 dark:text-white rounded-xl border-2 border-dcc-system shadow-xl relative overflow-hidden">
+            <div className="flex flex-col items-center text-center space-y-6 relative z-10">
+                <div className="bg-red-100 dark:bg-red-900/30 p-4 rounded-full shadow-sm">
+                    <Skull className="w-12 h-12 text-red-600 dark:text-red-500" />
+                </div>
+                
+                <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-wider text-dcc-system">
+                    Welcome, Crawler!
+                </h1>
+                
+                <div className="space-y-4 max-w-xl">
+                    <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
+                        "Oh, look at you. Fresh meat. You haven't done <span className="text-red-600 dark:text-red-400 italic">anything</span> yet."
+                    </p>
+                    <p className="text-base text-gray-600 dark:text-gray-400">
+                        "You have zero quests. Zero achievements. You are statistically insignificant. 
+                        But don't worry, the dungeon will grind you down regardless of your participation."
+                    </p>
+                    <p className="text-base text-gray-600 dark:text-gray-400">
+                        "Why don't you try scanning one of those QR codes or clicking a button before I get bored and terminate your session?"
+                    </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 mt-8">
+                    <Link to="/quests/new" className="px-6 py-3 bg-dcc-system text-white dark:text-black font-bold text-base uppercase tracking-wider rounded hover:bg-orange-700 dark:hover:bg-orange-400 transition-colors shadow-md">
+                        Start First Quest
+                    </Link>
+                    <Link to="/achievements/new" className="px-6 py-3 bg-white dark:bg-gray-800 text-dcc-system border-2 border-dcc-system font-bold text-base uppercase tracking-wider rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-md">
+                        Log Achievement
+                    </Link>
+                </div>
+            </div>
+        </div>
+    );
+  }
 
   return (
     <div className="space-y-6 px-4 sm:px-0">

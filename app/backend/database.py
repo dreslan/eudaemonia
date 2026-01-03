@@ -1,7 +1,7 @@
 import json
 import os
-from typing import List, Dict, Any
-from models import Quest, Achievement
+from typing import List, Dict, Any, Optional
+from models import Quest, Achievement, UserInDB
 
 DB_FILE = "local_db.json"
 
@@ -12,7 +12,13 @@ class LocalDatabase:
 
     def _ensure_db(self):
         if not os.path.exists(self.db_path):
-            self._save_data({"quests": [], "achievements": []})
+            self._save_data({"quests": [], "achievements": [], "users": []})
+        else:
+            # Migration: Ensure users key exists
+            data = self._load_data()
+            if "users" not in data:
+                data["users"] = []
+                self._save_data(data)
 
     def _load_data(self) -> Dict[str, Any]:
         with open(self.db_path, "r") as f:
@@ -22,9 +28,12 @@ class LocalDatabase:
         with open(self.db_path, "w") as f:
             json.dump(data, f, indent=4, default=str)
 
-    def get_quests(self) -> List[Dict]:
+    def get_quests(self, user_id: Optional[str] = None) -> List[Dict]:
         data = self._load_data()
-        return data.get("quests", [])
+        quests = data.get("quests", [])
+        if user_id:
+            return [q for q in quests if q.get("user_id") == user_id]
+        return quests
 
     def add_quest(self, quest: Quest):
         data = self._load_data()
@@ -37,9 +46,12 @@ class LocalDatabase:
         self._save_data(data)
         return quest
 
-    def get_achievements(self) -> List[Dict]:
+    def get_achievements(self, user_id: Optional[str] = None) -> List[Dict]:
         data = self._load_data()
-        return data.get("achievements", [])
+        achievements = data.get("achievements", [])
+        if user_id:
+            return [a for a in achievements if a.get("user_id") == user_id]
+        return achievements
 
     def add_achievement(self, achievement: Achievement):
         data = self._load_data()
@@ -58,6 +70,21 @@ class LocalDatabase:
         return False
 
     def clear_all_data(self):
-        self._save_data({"quests": [], "achievements": []})
+        self._save_data({"quests": [], "achievements": [], "users": []})
+
+    def get_user(self, username: str) -> Optional[UserInDB]:
+        data = self._load_data()
+        users = data.get("users", [])
+        for user in users:
+            if user["username"] == username:
+                return UserInDB(**user)
+        return None
+
+    def create_user(self, user: UserInDB):
+        data = self._load_data()
+        user_dict = user.model_dump(mode='json')
+        data["users"].append(user_dict)
+        self._save_data(data)
+        return user
 
 db = LocalDatabase()
