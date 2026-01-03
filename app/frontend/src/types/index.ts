@@ -4,7 +4,7 @@ export type Status = 'active' | 'backlog' | 'maybe' | 'completed';
 export interface Quest {
     id: string;
     title: string;
-    dimension: Dimension;
+    dimension?: Dimension | null;
     status: Status;
     tags: string[];
     created_at: string;
@@ -15,7 +15,7 @@ export interface Quest {
 
 export interface QuestCreate {
     title: string;
-    dimension: Dimension;
+    dimension?: Dimension | null;
     status?: Status;
     tags?: string[];
     victory_condition?: string;
@@ -26,7 +26,7 @@ export interface Achievement {
     title: string;
     context: string;
     date_completed: string;
-    dimension: Dimension;
+    dimension?: Dimension | null;
     image_url?: string;
     ai_description?: string;
     ai_reward?: string;
@@ -38,9 +38,10 @@ export interface AchievementCreate {
     title: string;
     context: string;
     date_completed: string;
-    dimension: Dimension;
+    dimension?: Dimension | null;
     image_url?: string;
     ai_description?: string;
     ai_reward?: string;
     quest_id?: string;
+    use_genai?: boolean;
 }

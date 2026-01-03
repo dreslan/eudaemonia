@@ -10,7 +10,7 @@ const NewQuest: React.FC = () => {
 
   const [formData, setFormData] = useState<QuestCreate>({
     title: '',
-    dimension: 'intellectual',
+    dimension: null,
     status: 'active',
     tags: [],
     victory_condition: ''
@@ -24,7 +24,8 @@ const NewQuest: React.FC = () => {
     vocational: "Work, work, work. You're just a cog in the machine, but at least be a shiny cog.",
     social: "Making friends? Don't get too attached. They usually explode, get eaten, or betray you for a loot box.",
     emotional: "Aww, having feelings? Bottle that up. Emotions are a weakness in the dungeon. Or monetize them.",
-    spiritual: "Praying to the AI gods? We're listening, but we mostly just want to be entertained."
+    spiritual: "Praying to the AI gods? We're listening, but we mostly just want to be entertained.",
+    default: "You're doing something. I hope it's entertaining."
   };
 
   const sampleText: Record<string, { title: string, victory: string }> = {
@@ -35,7 +36,8 @@ const NewQuest: React.FC = () => {
     vocational: { title: "Climb the Ladder", victory: "Apply to 5 jobs that don't sound soul-crushing." },
     social: { title: "Infiltrate the Party", victory: "Attend the networking event and speak to at least 3 humans." },
     emotional: { title: "Tame the Rage Beast", victory: "Practice deep breathing for 10 minutes when I want to smash something." },
-    spiritual: { title: "Commune with the AI", victory: "Meditate for 15 minutes without checking my phone." }
+    spiritual: { title: "Commune with the AI", victory: "Meditate for 15 minutes without checking my phone." },
+    default: { title: "Do a Thing", victory: "Complete the thing successfully." }
   };
 
   useEffect(() => {
@@ -88,7 +90,7 @@ const NewQuest: React.FC = () => {
                     type="text"
                     name="title"
                     required
-                    placeholder={`e.g. ${sampleText[formData.dimension].title}`}
+                    placeholder={`e.g. ${sampleText[formData.dimension || 'default'].title}`}
                     value={formData.title}
                     onChange={handleChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-2 border dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-500"
@@ -98,16 +100,17 @@ const NewQuest: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Dimension</label>
                 <select
                 name="dimension"
-                value={formData.dimension}
+                value={formData.dimension || ''}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-2 border dark:bg-gray-800 dark:border-gray-600 dark:text-white"
                 >
+                <option value="">-- None --</option>
                 {['intellectual', 'physical', 'financial', 'environmental', 'vocational', 'social', 'emotional', 'spiritual'].map(d => (
                     <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>
                 ))}
                 </select>
                 <p className="mt-2 text-xs text-orange-600 dark:text-dcc-system italic border-l-2 border-orange-300 dark:border-dcc-system pl-2">
-                    "AI: {dccQuotes[formData.dimension]}"
+                    "AI: {dccQuotes[formData.dimension || 'default']}"
                 </p>
             </div>
         </div>
@@ -118,7 +121,7 @@ const NewQuest: React.FC = () => {
             <textarea
                 name="victory_condition"
                 rows={3}
-                placeholder={`What does success look like? e.g. ${sampleText[formData.dimension].victory}`}
+                placeholder={`What does success look like? e.g. ${sampleText[formData.dimension || 'default'].victory}`}
                 value={formData.victory_condition}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-2 border dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-500"

@@ -5,7 +5,7 @@ import uuid
 
 class QuestBase(BaseModel):
     title: str
-    dimension: Literal['intellectual', 'physical', 'financial', 'environmental', 'vocational', 'social', 'emotional', 'spiritual']
+    dimension: Optional[Literal['intellectual', 'physical', 'financial', 'environmental', 'vocational', 'social', 'emotional', 'spiritual']] = None
     status: Literal['active', 'backlog', 'maybe', 'completed'] = 'active'
     tags: List[str] = []
     victory_condition: Optional[str] = None
@@ -31,7 +31,7 @@ class AchievementBase(BaseModel):
     title: str
     context: str # User input: What did you do?
     date_completed: datetime
-    dimension: Literal['intellectual', 'physical', 'financial', 'environmental', 'vocational', 'social', 'emotional', 'spiritual']
+    dimension: Optional[Literal['intellectual', 'physical', 'financial', 'environmental', 'vocational', 'social', 'emotional', 'spiritual']] = None
     is_hidden: bool = False
     
     # AI Generated
@@ -41,7 +41,7 @@ class AchievementBase(BaseModel):
     quest_id: Optional[str] = None 
 
 class AchievementCreate(AchievementBase):
-    pass
+    use_genai: bool = False
 
 class AchievementUpdate(BaseModel):
     title: Optional[str] = None
