@@ -42,7 +42,18 @@ const PrintView: React.FC = () => {
         <div className="flex flex-col items-center justify-center min-h-screen bg-white p-8 print:p-0 print:bg-transparent">
             <div className="print:scale-100 transform scale-125">
                 {type === 'quest' ? (
-                    <QuestCard quest={data as Quest} />
+                    <div className="flex flex-col md:flex-row print:flex-row gap-8 print:gap-4 items-center">
+                        <QuestCard 
+                            quest={data as Quest} 
+                            forceFace="front"
+                            hideActions={true}
+                        />
+                        <QuestCard 
+                            quest={data as Quest} 
+                            forceFace="back"
+                            hideActions={true}
+                        />
+                    </div>
                 ) : (
                     <div className="flex flex-col md:flex-row print:flex-row gap-8 print:gap-4 items-center">
                         <AchievementCard 

@@ -41,68 +41,86 @@ def seed():
     if veteran_user:
         user_id = veteran_user.id
         
-        # Check if data already exists to avoid duplication on re-runs
+        print("Ensuring dimension quests for veteran...")
+        
+        dimension_quests = [
+            {
+                "title": "Smash the Goblin Horde",
+                "dimension": "physical",
+                "status": "active",
+                "tags": ["combat", "strength"],
+                "victory_condition": "Complete 50 pushups in one set"
+            },
+            {
+                "title": "Decipher the Ancient Scroll",
+                "dimension": "intellectual",
+                "status": "active",
+                "tags": ["study", "intelligence"],
+                "victory_condition": "Read a non-fiction book this week"
+            },
+            {
+                "title": "Hoard Gold Coins",
+                "dimension": "financial",
+                "status": "active",
+                "tags": ["wealth", "saving"],
+                "victory_condition": "Save $500 this month"
+            },
+            {
+                "title": "Purify the Poisoned Swamp",
+                "dimension": "environmental",
+                "status": "active",
+                "tags": ["nature", "cleaning"],
+                "victory_condition": "Clean up the local park"
+            },
+            {
+                "title": "Level Up Class",
+                "dimension": "vocational",
+                "status": "active",
+                "tags": ["career", "promotion"],
+                "victory_condition": "Complete the certification course"
+            },
+            {
+                "title": "Form a Party",
+                "dimension": "social",
+                "status": "active",
+                "tags": ["charisma", "friends"],
+                "victory_condition": "Host a board game night"
+            },
+            {
+                "title": "Conquer Fear",
+                "dimension": "emotional",
+                "status": "active",
+                "tags": ["willpower", "mental-health"],
+                "victory_condition": "Meditate for 10 minutes daily"
+            },
+            {
+                "title": "Commune with the AI Gods",
+                "dimension": "spiritual",
+                "status": "active",
+                "tags": ["faith", "reflection"],
+                "victory_condition": "Journal about your purpose"
+            }
+        ]
+
         existing_quests = db.get_quests(user_id)
-        if not existing_quests:
-            print("Adding quests for veteran...")
-            
-            # Active Quests
-            q1 = Quest(
-                user_id=user_id,
-                title="Defeat the Goblin King",
-                dimension="physical",
-                status="active",
-                tags=["dungeon", "combat"],
-                victory_condition="Kill the boss in the throne room"
-            )
-            db.add_quest(q1)
+        existing_titles = [q['title'] for q in existing_quests]
 
-            q2 = Quest(
-                user_id=user_id,
-                title="Learn Ancient Runes",
-                dimension="intellectual",
-                status="active",
-                tags=["magic", "study"],
-                victory_condition="Read the tablet without a translator"
-            )
-            db.add_quest(q2)
+        for q_data in dimension_quests:
+            if q_data['title'] not in existing_titles:
+                print(f"Adding quest: {q_data['title']}")
+                quest = Quest(
+                    user_id=user_id,
+                    title=q_data['title'],
+                    dimension=q_data['dimension'],
+                    status=q_data['status'],
+                    tags=q_data['tags'],
+                    victory_condition=q_data['victory_condition']
+                )
+                db.add_quest(quest)
+            else:
+                print(f"Quest already exists: {q_data['title']}")
 
-            # Completed Quest
-            q3 = Quest(
-                user_id=user_id,
-                title="Find the Lost Cat",
-                dimension="emotional",
-                status="completed",
-                tags=["side-quest"],
-                victory_condition="Return Mittens to the owner",
-                progress=100
-            )
-            db.add_quest(q3)
-            
-            # Backlog Quest
-            q4 = Quest(
-                user_id=user_id,
-                title="Conquer the World",
-                dimension="vocational",
-                status="backlog",
-                tags=["long-term"],
-                victory_condition="Become Supreme Ruler"
-            )
-            db.add_quest(q4)
-
-            # Quest with No Dimension
-            q5 = Quest(
-                user_id=user_id,
-                title="Wander Aimlessly",
-                dimension=None,
-                status="active",
-                tags=["exploration"],
-                victory_condition="Walk until you get tired"
-            )
-            db.add_quest(q5)
-        else:
-            print("Quests for veteran already exist.")
-
+        # Original seed logic for achievements (kept for compatibility if needed, but simplified)
         existing_achievements = db.get_achievements(user_id)
         if not existing_achievements:
             print("Adding achievements for veteran...")
