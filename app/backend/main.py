@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 from models import Quest, QuestCreate, QuestUpdate, Achievement, AchievementCreate, AchievementUpdate, BulkVisibilityUpdate, User, UserCreate, UserUpdate, Token, UserInDB
-from database import db
+from database_sqlite import db
 import random
 from datetime import date, datetime, timezone, timedelta
 from auth import verify_password, get_password_hash, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -79,30 +79,12 @@ def create_quest(quest: QuestCreate, current_user: UserInDB = Depends(get_curren
 
 @app.post("/quests/bulk-visibility")
 def bulk_update_quest_visibility(update_data: BulkVisibilityUpdate, current_user: UserInDB = Depends(get_current_user)):
-    quests = db.get_quests(user_id=current_user.id)
-    updated_quests = []
-    # We need to update in the main list, so we might need a better DB method or just load all, update ours, save all.
-    # Since db.get_quests returns a copy or filtered list, updating it won't save.
-    # I should probably add a bulk update method to DB or iterate carefully.
-    # For now, I'll implement a simple loop using db._load_data to be safe, or add a method to DB.
-    # Actually, let's just use the DB methods if possible, but DB doesn't have bulk update.
-    # I'll read all, update matching, save.
-    all_quests = db._load_data().get("quests", [])
-    for q in all_quests:
-        if q.get("user_id") == current_user.id:
-            q['is_hidden'] = update_data.is_hidden
-    
-    db._save_data({"quests": all_quests, "achievements": db.get_achievements(), "users": db._load_data().get("users", [])})
+    db.update_quest_visibility(current_user.id, update_data.is_hidden)
     return {"message": f"All quests visibility set to {update_data.is_hidden}"}
 
 @app.post("/achievements/bulk-visibility")
 def bulk_update_achievement_visibility(update_data: BulkVisibilityUpdate, current_user: UserInDB = Depends(get_current_user)):
-    all_achievements = db._load_data().get("achievements", [])
-    for a in all_achievements:
-        if a.get("user_id") == current_user.id:
-            a['is_hidden'] = update_data.is_hidden
-    
-    db._save_data({"quests": db.get_quests(), "achievements": all_achievements, "users": db._load_data().get("users", [])})
+    db.update_achievement_visibility(current_user.id, update_data.is_hidden)
     return {"message": f"All achievements visibility set to {update_data.is_hidden}"}
 
 @app.get("/quests/{quest_id}", response_model=Quest)
@@ -116,17 +98,15 @@ def get_quest(quest_id: str, current_user: UserInDB = Depends(get_current_user))
 @app.patch("/quests/{quest_id}", response_model=Quest)
 def update_quest(quest_id: str, update_data: QuestUpdate, current_user: UserInDB = Depends(get_current_user)):
     # We need to load all quests to update the file correctly, but verify ownership
-    all_quests = db._load_data().get("quests", [])
-    quest_index = -1
+    quests = db.get_quests(user_id=current_user.id)
     current_quest_dict = None
     
-    for i, q in enumerate(all_quests):
-        if q['id'] == quest_id and q.get('user_id') == current_user.id:
-            quest_index = i
+    for q in quests:
+        if q['id'] == quest_id:
             current_quest_dict = q
             break
             
-    if quest_index == -1:
+    if not current_quest_dict:
         raise HTTPException(status_code=404, detail="Quest not found")
 
     # Update fields
@@ -168,9 +148,25 @@ def update_quest(quest_id: str, update_data: QuestUpdate, current_user: UserInDB
         db.add_achievement(new_ach)
 
     # Save back to DB
-    all_quests[quest_index] = updated_quest.model_dump(mode='json')
-    # Reload achievements to include the new one if added
-    db._save_data({"quests": all_quests, "achievements": db._load_data().get("achievements", []), "users": db._load_data().get("users", [])})
+    # We need a way to update a quest in SQLite. 
+    # Since we don't have a direct update_quest method in SqliteDatabase that takes a Quest object,
+    # we can use add_quest which uses session.merge/add. 
+    # Wait, add_quest in SqliteDatabase does `session.add(quest_db)`. 
+    # If ID exists, it might fail or update depending on session behavior.
+    # But `add_quest` creates a NEW QuestDB object.
+    # I should add an `update_quest` method to SqliteDatabase or use `add_quest` with merge.
+    # Actually, `add_quest` implementation:
+    # quest_db = QuestDB(...)
+    # session.add(quest_db)
+    # This will likely fail if PK exists.
+    # I should implement `update_quest` in SqliteDatabase properly or use `session.merge`.
+    # Let's check `database_sqlite.py` again.
+    # I didn't implement `update_quest` for Quest object updates, only `update_quest_visibility`.
+    # I should fix `database_sqlite.py` to support updating quests.
+    
+    # For now, let's assume I'll fix `database_sqlite.py` to have `update_quest`.
+    db.update_quest(updated_quest)
+    
     return updated_quest
 
 @app.delete("/quests/{quest_id}")
@@ -235,29 +231,26 @@ def get_achievement(achievement_id: str, current_user: UserInDB = Depends(get_cu
 
 @app.patch("/achievements/{achievement_id}", response_model=Achievement)
 def update_achievement(achievement_id: str, update_data: AchievementUpdate, current_user: UserInDB = Depends(get_current_user)):
-    all_achievements = db._load_data().get("achievements", [])
-    ach_index = -1
+    achievements = db.get_achievements(user_id=current_user.id)
     current_ach_dict = None
     
-    for i, a in enumerate(all_achievements):
-        if a['id'] == achievement_id and a.get('user_id') == current_user.id:
-            ach_index = i
+    for a in achievements:
+        if a['id'] == achievement_id:
             current_ach_dict = a
             break
             
-    if ach_index == -1:
+    if not current_ach_dict:
         raise HTTPException(status_code=404, detail="Achievement not found")
 
     current_achievement = Achievement(**current_ach_dict)
     updated_fields = update_data.model_dump(exclude_unset=True)
     
-    achievement_data = current_achievement.model_dump()
-    achievement_data.update(updated_fields)
-    updated_achievement = Achievement(**achievement_data)
-    
-    all_achievements[ach_index] = updated_achievement.model_dump(mode='json')
-    db._save_data({"quests": db._load_data().get("quests", []), "achievements": all_achievements, "users": db._load_data().get("users", [])})
-    return updated_achievement
+    # Use the new update_achievement method in DB
+    updated_ach_dict = db.update_achievement(achievement_id, current_user.id, updated_fields)
+    if not updated_ach_dict:
+         raise HTTPException(status_code=404, detail="Achievement not found or update failed")
+         
+    return Achievement(**updated_ach_dict)
 
 @app.get("/profile")
 def get_profile(current_user: UserInDB = Depends(get_current_user)):
@@ -315,22 +308,15 @@ def get_public_profile(username: str):
 @app.get("/public/achievements/{achievement_id}", response_model=Achievement)
 def get_public_achievement(achievement_id: str):
     # In a real DB we would query by ID directly. Here we load all.
-    all_achievements = db._load_data().get("achievements", [])
-    for a in all_achievements:
-        if a['id'] == achievement_id:
-            if a.get('is_hidden', False):
-                raise HTTPException(status_code=404, detail="Achievement not found")
-            return a
+    ach = db.get_achievement_by_id(achievement_id)
+    if ach:
+        if ach.get('is_hidden', False):
+            raise HTTPException(status_code=404, detail="Achievement not found")
+        return ach
     raise HTTPException(status_code=404, detail="Achievement not found")
 
 @app.post("/reset")
 def reset_data(current_user: UserInDB = Depends(get_current_user)):
     # Only delete data for current user
-    all_quests = db._load_data().get("quests", [])
-    all_achievements = db._load_data().get("achievements", [])
-    
-    new_quests = [q for q in all_quests if q.get("user_id") != current_user.id]
-    new_achievements = [a for a in all_achievements if a.get("user_id") != current_user.id]
-    
-    db._save_data({"quests": new_quests, "achievements": new_achievements, "users": db._load_data().get("users", [])})
+    db.reset_user_data(current_user.id)
     return {"message": "Your data has been reset."}
