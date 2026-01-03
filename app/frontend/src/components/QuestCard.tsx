@@ -41,28 +41,49 @@ const QuestCard: React.FC<QuestCardProps> = ({
 
     // Render content based on face
     const renderContent = () => {
-        if (forceFace === 'back') {
-            return (
-                <div className={`w-full h-full rounded-2xl overflow-hidden bg-${bgColor}-900 border-[12px] border-${borderColor}-900 shadow-2xl flex flex-col items-center justify-center relative`}>
-                    {/* Pattern Background */}
-                    <div className="absolute inset-0 opacity-10 overflow-hidden pointer-events-none select-none flex flex-wrap content-center justify-center rotate-45 scale-150">
-                        {Array.from({ length: 100 }).map((_, i) => (
-                            <span key={i} className="text-xs font-bold uppercase m-4 text-white whitespace-nowrap">
-                                {dimension}
-                            </span>
-                        ))}
-                    </div>
-
-                    <div className="z-10 bg-white p-4 rounded-xl shadow-lg">
-                        <QRCodeSVG value={questUrl} size={180} />
-                    </div>
-                    
-                    <div className="z-10 mt-6 text-center">
-                        <h3 className="font-['Cinzel'] font-bold text-xl text-white mb-1">Quest Log</h3>
-                        <p className="font-['Cormorant_Garamond'] text-lg text-${borderColor}-200 italic">Scan to update progress</p>
+        const BackContent = (
+            <div className={`w-full h-full rounded-2xl overflow-hidden bg-${bgColor}-900 border-[12px] border-${borderColor}-900 shadow-2xl flex flex-col relative`}>
+                {/* Pattern Background */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none select-none rounded-2xl">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] -rotate-45 opacity-10 flex items-center justify-center">
+                        <p className={`text-[10px] font-black uppercase text-${borderColor}-200 tracking-widest leading-relaxed text-center w-full break-words`}>
+                            {Array.from({ length: 800 }).fill("QUEST LOG").join(" ")}
+                        </p>
                     </div>
                 </div>
-            );
+
+                {/* Header */}
+                <div className={`bg-gray-900 p-4 border-b-4 border-${borderColor}-700 relative z-10 text-center shadow-md`}>
+                    <h3 className={`font-['Cinzel'] font-black text-xl text-${borderColor}-400 tracking-widest drop-shadow-md`}>QUEST LOG</h3>
+                </div>
+
+                {/* Body - QR Code */}
+                <div className="flex-1 flex items-center justify-center relative z-10 p-4">
+                    <div className="bg-white p-3 rounded-xl shadow-2xl border-4 border-gray-900">
+                        <QRCodeSVG value={questUrl} size={160} />
+                    </div>
+                </div>
+                
+                {/* Footer */}
+                <div className={`bg-gray-900 p-4 border-t-4 border-${borderColor}-700 relative z-10 text-center shadow-md`}>
+                    <h3 className={`font-['Cinzel'] font-black text-xl text-${borderColor}-400 tracking-widest drop-shadow-md`}>QUEST LOG</h3>
+                </div>
+
+                {!forceFace && (
+                    <div className="absolute top-4 right-4 z-20 print:hidden">
+                        <button 
+                            onClick={handleFlip}
+                            className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/70 hover:text-white"
+                        >
+                            <RotateCw size={20} />
+                        </button>
+                    </div>
+                )}
+            </div>
+        );
+
+        if (forceFace === 'back') {
+            return BackContent;
         }
 
         // Default to Front (or 3D wrapper if no forceFace)
@@ -159,33 +180,8 @@ const QuestCard: React.FC<QuestCardProps> = ({
                 {FrontContent}
                 
                 {/* BACK (3D Mode) */}
-                <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-2xl overflow-hidden bg-${bgColor}-900 border-[12px] border-${borderColor}-900 shadow-2xl flex flex-col items-center justify-center relative`}>
-                    {/* Pattern Background */}
-                    <div className="absolute inset-0 opacity-10 overflow-hidden pointer-events-none select-none flex flex-wrap content-center justify-center rotate-45 scale-150">
-                        {Array.from({ length: 100 }).map((_, i) => (
-                            <span key={i} className="text-xs font-bold uppercase m-4 text-white whitespace-nowrap">
-                                {dimension}
-                            </span>
-                        ))}
-                    </div>
-
-                    <div className="absolute top-4 right-4 z-20 print:hidden">
-                        <button 
-                            onClick={handleFlip}
-                            className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/70 hover:text-white"
-                        >
-                            <RotateCw size={20} />
-                        </button>
-                    </div>
-
-                    <div className="z-10 bg-white p-4 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
-                        <QRCodeSVG value={questUrl} size={180} />
-                    </div>
-                    
-                    <div className="z-10 mt-6 text-center">
-                        <h3 className="font-['Cinzel'] font-bold text-xl text-white mb-1">Quest Log</h3>
-                        <p className="font-['Cormorant_Garamond'] text-lg text-${borderColor}-200 italic">Scan to update progress</p>
-                    </div>
+                <div className="absolute inset-0 backface-hidden rotate-y-180">
+                    {BackContent}
                 </div>
             </div>
         );
