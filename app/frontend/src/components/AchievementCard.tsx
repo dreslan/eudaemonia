@@ -112,7 +112,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
                         />
                     ) : (
                         <div className="absolute inset-0 flex items-center justify-center opacity-20 select-none">
-                            <Icon size={120} className={`${theme.text200} drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]`} strokeWidth={1} />
+                            <Icon size={120} className={`${theme.text500} drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]`} strokeWidth={1} />
                         </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>

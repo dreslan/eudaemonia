@@ -126,7 +126,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
                 {/* Art Area */}
                 <div className={`h-48 bg-black relative overflow-hidden border-b-4 ${theme.border700} group-hover:brightness-110 transition-all duration-500`}>
                     <div className="absolute inset-0 flex items-center justify-center opacity-20 select-none">
-                        <Icon size={140} className={`${theme.text200} drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]`} strokeWidth={1} />
+                        <Icon size={140} className={`${theme.text500} drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]`} strokeWidth={1} />
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
                 </div>

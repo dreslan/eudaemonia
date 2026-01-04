@@ -8,6 +8,7 @@ export interface DimensionTheme {
     border400: string;
     text200: string;
     text400: string;
+    text500: string;
     from800: string;
     to900: string;
 }
@@ -23,6 +24,7 @@ export const dimensionColors: Record<string, DimensionTheme> = {
         border400: 'border-blue-400',
         text200: 'text-blue-200',
         text400: 'text-blue-400',
+        text500: 'text-blue-500',
         from800: 'from-blue-800',
         to900: 'to-blue-900',
     },
@@ -36,6 +38,7 @@ export const dimensionColors: Record<string, DimensionTheme> = {
         border400: 'border-red-400',
         text200: 'text-red-200',
         text400: 'text-red-400',
+        text500: 'text-red-500',
         from800: 'from-red-800',
         to900: 'to-red-900',
     },
@@ -49,6 +52,7 @@ export const dimensionColors: Record<string, DimensionTheme> = {
         border400: 'border-green-400',
         text200: 'text-green-200',
         text400: 'text-green-400',
+        text500: 'text-green-500',
         from800: 'from-green-800',
         to900: 'to-green-900',
     },
@@ -62,6 +66,7 @@ export const dimensionColors: Record<string, DimensionTheme> = {
         border400: 'border-emerald-400',
         text200: 'text-emerald-200',
         text400: 'text-emerald-400',
+        text500: 'text-emerald-500',
         from800: 'from-emerald-800',
         to900: 'to-emerald-900',
     },
@@ -75,6 +80,7 @@ export const dimensionColors: Record<string, DimensionTheme> = {
         border400: 'border-amber-400',
         text200: 'text-amber-200',
         text400: 'text-amber-400',
+        text500: 'text-amber-500',
         from800: 'from-amber-800',
         to900: 'to-amber-900',
     },
@@ -88,6 +94,7 @@ export const dimensionColors: Record<string, DimensionTheme> = {
         border400: 'border-purple-400',
         text200: 'text-purple-200',
         text400: 'text-purple-400',
+        text500: 'text-purple-500',
         from800: 'from-purple-800',
         to900: 'to-purple-900',
     },
@@ -101,6 +108,7 @@ export const dimensionColors: Record<string, DimensionTheme> = {
         border400: 'border-pink-400',
         text200: 'text-pink-200',
         text400: 'text-pink-400',
+        text500: 'text-pink-500',
         from800: 'from-pink-800',
         to900: 'to-pink-900',
     },
@@ -114,6 +122,7 @@ export const dimensionColors: Record<string, DimensionTheme> = {
         border400: 'border-indigo-400',
         text200: 'text-indigo-200',
         text400: 'text-indigo-400',
+        text500: 'text-indigo-500',
         from800: 'from-indigo-800',
         to900: 'to-indigo-900',
     },
@@ -127,6 +136,7 @@ export const dimensionColors: Record<string, DimensionTheme> = {
         border400: 'border-gray-400',
         text200: 'text-gray-200',
         text400: 'text-gray-400',
+        text500: 'text-gray-500',
         from800: 'from-gray-800',
         to900: 'to-gray-900',
     }
