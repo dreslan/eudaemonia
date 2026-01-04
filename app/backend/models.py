@@ -4,7 +4,7 @@ from datetime import date, datetime
 import uuid
 
 class QuestBase(BaseModel):
-    title: str
+    title: str = Field(..., max_length=60)
     dimension: Optional[Literal['intellectual', 'physical', 'financial', 'environmental', 'vocational', 'social', 'emotional', 'spiritual']] = None
     status: Literal['active', 'backlog', 'completed'] = 'active'
     tags: List[str] = []
@@ -16,7 +16,7 @@ class QuestCreate(QuestBase):
     pass
 
 class QuestUpdate(BaseModel):
-    title: Optional[str] = None
+    title: Optional[str] = Field(None, max_length=60)
     status: Optional[str] = None
     progress: Optional[int] = None
     victory_condition: Optional[str] = None
@@ -30,7 +30,7 @@ class Quest(QuestBase):
     user_id: str
 
 class AchievementBase(BaseModel):
-    title: str
+    title: str = Field(..., max_length=80)
     context: str # User input: What did you do?
     date_completed: datetime
     dimension: Optional[Literal['intellectual', 'physical', 'financial', 'environmental', 'vocational', 'social', 'emotional', 'spiritual']] = None
@@ -46,7 +46,7 @@ class AchievementCreate(AchievementBase):
     use_genai: bool = False
 
 class AchievementUpdate(BaseModel):
-    title: Optional[str] = None
+    title: Optional[str] = Field(None, max_length=80)
     context: Optional[str] = None
     is_hidden: Optional[bool] = None
     quest_id: Optional[str] = None

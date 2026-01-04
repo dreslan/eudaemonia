@@ -105,7 +105,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
                 <div className={`bg-gradient-to-b ${theme.from800} ${theme.to900} p-3 border-b-4 border-yellow-600 relative z-10`}>
                     <div className="flex justify-between items-start pr-2">
                         <div className="flex-1 min-w-0">
-                            <h3 className="font-['Cinzel'] font-bold text-sm leading-tight text-white drop-shadow-md truncate" title={achievement.title}>
+                            <h3 className="font-['Cinzel'] font-bold text-sm leading-tight text-white drop-shadow-md line-clamp-2 min-h-[1.25em]" title={achievement.title}>
                                 {achievement.title}
                             </h3>
                             <div className="flex items-center gap-2 mt-1">

@@ -102,6 +102,7 @@ const NewQuest: React.FC = () => {
                     type="text"
                     name="title"
                     required
+                    maxLength={60}
                     placeholder={`e.g. ${sampleText[formData.dimension || 'default'].title}`}
                     value={formData.title}
                     onChange={handleChange}

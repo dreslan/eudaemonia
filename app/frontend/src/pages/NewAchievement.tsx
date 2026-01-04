@@ -90,6 +90,7 @@ const NewAchievement: React.FC = () => {
                     type="text"
                     name="title"
                     required
+                    maxLength={80}
                     placeholder="What did you accomplish?"
                     value={formData.title}
                     onChange={handleChange}
