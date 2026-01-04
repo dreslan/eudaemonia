@@ -266,7 +266,16 @@ const Dashboard: React.FC = () => {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <select 
                                             value={quest.status}
-                                            onChange={(e) => handleStatusChange(quest.id, e.target.value as Status)}
+                                            onChange={(e) => {
+                                                const newStatus = e.target.value as Status;
+                                                if (newStatus === 'completed') {
+                                                    if (window.confirm("Are you sure you want to complete this quest? This cannot be undone.")) {
+                                                        handleStatusChange(quest.id, newStatus);
+                                                    }
+                                                } else {
+                                                    handleStatusChange(quest.id, newStatus);
+                                                }
+                                            }}
                                             disabled={quest.status === 'completed'}
                                             className={`text-xs font-semibold rounded-full px-2 py-1 border-0 cursor-pointer focus:ring-2 focus:ring-orange-500 ${
                                                 quest.status === 'active' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :

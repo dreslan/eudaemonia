@@ -158,7 +158,11 @@ const QuestDetail: React.FC = () => {
                     
                     {quest.status === 'active' && (
                         <button
-                            onClick={() => handleStatusChange('completed')}
+                            onClick={() => {
+                                if (window.confirm("Are you sure you want to complete this quest? This cannot be undone.")) {
+                                    handleStatusChange('completed');
+                                }
+                            }}
                             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-dcc-system hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 dark:hover:bg-orange-400"
                         >
                             <CheckCircle className="w-4 h-4 mr-2" />

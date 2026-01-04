@@ -78,7 +78,11 @@ const CardActionBar: React.FC<CardActionBarProps> = ({
                         )}
                         {status === 'active' && (
                             <button
-                                onClick={() => onStatusChange?.('completed')}
+                                onClick={() => {
+                                    if (window.confirm("Are you sure you want to complete this quest? This cannot be undone.")) {
+                                        onStatusChange?.('completed');
+                                    }
+                                }}
                                 className="p-2 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-full transition-colors"
                                 title="Complete Quest"
                             >
