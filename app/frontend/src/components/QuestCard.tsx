@@ -65,6 +65,9 @@ const QuestCard: React.FC<QuestCardProps> = ({
                     <p className={`mt-4 text-[10px] font-bold uppercase text-white tracking-widest bg-${theme.base}-600 px-2 py-1 rounded border-2 ${theme.border400} shadow-lg`}>
                         ISSUED TO {username}
                     </p>
+                    <p className="mt-2 text-[10px] font-mono text-gray-400 uppercase tracking-widest">
+                        Scan to keep the goblins fed
+                    </p>
                 </div>
                 
                 {/* Footer */}
@@ -138,7 +141,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
                             Victory Condition
                         </div>
                         <p className="font-['Cormorant_Garamond'] text-xl leading-snug text-gray-200 italic">
-                            "{quest.victory_condition || "Survive."}"
+                            {quest.victory_condition || "Survive."}
                         </p>
                     </div>
                 </div>
