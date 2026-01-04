@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import { Printer, ExternalLink } from 'lucide-react';
+import { Printer, ExternalLink, RotateCw } from 'lucide-react';
 import type { Achievement } from '../types';
 import { dimensionColors } from '../utils/colors';
 import { getDimensionIcon } from '../utils/dimensionIcons';
@@ -23,6 +23,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
     forceFace,
     hideActions = false
 }) => {
+    const [isFlipped, setIsFlipped] = useState(false);
     const [imgError, setImgError] = useState(false);
     const dimension = achievement.dimension || 'default';
     const theme = dimensionColors[dimension] || dimensionColors.default;
@@ -34,55 +35,75 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
         window.open(`/print/achievements/${achievement.id}`, '_blank');
     };
 
+    const handleFlip = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!forceFace) {
+            setIsFlipped(!isFlipped);
+        }
+    };
+
     // Render content based on face
     const renderContent = () => {
-        if (forceFace === 'back') {
-            return (
-                <div className={`w-full h-full rounded-2xl overflow-hidden bg-yellow-500 border-[12px] border-yellow-600 shadow-2xl flex flex-col relative`}>
-                    {/* Pattern Background */}
-                    <div className="absolute inset-0 overflow-hidden pointer-events-none select-none rounded-2xl">
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] -rotate-45 opacity-10 flex items-center justify-center">
-                            <p className="text-[10px] font-black uppercase text-black tracking-widest leading-relaxed text-center w-full break-words">
-                                {Array.from({ length: 800 }).fill("NEW ACHIEVEMENT!").join(" ")}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Header */}
-                    <div className="bg-gray-900 p-4 border-b-4 border-yellow-600 relative z-10 text-center shadow-md">
-                        <h3 className="font-['Cinzel'] font-black text-xl text-yellow-500 tracking-widest drop-shadow-md">NEW ACHIEVEMENT!</h3>
-                    </div>
-
-                    {/* Body - QR Code */}
-                    <div className="flex-1 flex flex-col items-center justify-center relative z-10 p-4">
-                        <div className="bg-white p-3 rounded-xl shadow-2xl border-4 border-gray-900">
-                            <QRCodeSVG value={shareUrl} size={160} />
-                        </div>
-                        <p className="mt-4 text-[10px] font-bold uppercase text-black tracking-widest bg-yellow-500 px-2 py-1 rounded border-2 border-black">
-                            Unlocked by {username}
+        const BackContent = (
+            <div className={`w-full h-full rounded-2xl overflow-hidden bg-yellow-500 border-[12px] border-yellow-600 shadow-2xl flex flex-col relative`}>
+                {/* Pattern Background */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none select-none rounded-2xl">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] -rotate-45 opacity-10 flex items-center justify-center">
+                        <p className="text-[10px] font-black uppercase text-black tracking-widest leading-relaxed text-center w-full break-words">
+                            {Array.from({ length: 800 }).fill("NEW ACHIEVEMENT!").join(" ")}
                         </p>
-                        <p className="mt-2 text-[10px] font-mono text-black/70 uppercase tracking-widest">
-                            Scan to redeem cash value
-                        </p>
-                    </div>
-                    
-                    {/* Footer */}
-                    <div className="bg-gray-900 p-4 border-t-4 border-yellow-600 relative z-10 text-center shadow-md">
-                        <h3 className="font-['Cinzel'] font-black text-xl text-yellow-500 tracking-widest drop-shadow-md">NEW ACHIEVEMENT!</h3>
                     </div>
                 </div>
-            );
+
+                {/* Header */}
+                <div className="bg-gray-900 p-4 border-b-4 border-yellow-600 relative z-10 text-center shadow-md">
+                    <h3 className="font-['Cinzel'] font-black text-xl text-yellow-500 tracking-widest drop-shadow-md">NEW ACHIEVEMENT!</h3>
+                </div>
+
+                {/* Body - QR Code */}
+                <div className="flex-1 flex flex-col items-center justify-center relative z-10 p-4">
+                    <div className="bg-white p-3 rounded-xl shadow-2xl border-4 border-gray-900">
+                        <QRCodeSVG value={shareUrl} size={160} />
+                    </div>
+                    <p className="mt-4 text-[10px] font-bold uppercase text-black tracking-widest bg-yellow-500 px-2 py-1 rounded border-2 border-black">
+                        Unlocked by {username}
+                    </p>
+                    <p className="mt-2 text-[10px] font-mono text-black/70 uppercase tracking-widest">
+                        Scan to redeem cash value
+                    </p>
+                </div>
+                
+                {/* Footer */}
+                <div className="bg-gray-900 p-4 border-t-4 border-yellow-600 relative z-10 text-center shadow-md">
+                    <h3 className="font-['Cinzel'] font-black text-xl text-yellow-500 tracking-widest drop-shadow-md">NEW ACHIEVEMENT!</h3>
+                </div>
+
+                {!forceFace && (
+                    <div className="absolute top-4 right-4 z-20 print:hidden">
+                        <button 
+                            onClick={handleFlip}
+                            className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/70 hover:text-white"
+                        >
+                            <RotateCw size={20} />
+                        </button>
+                    </div>
+                )}
+            </div>
+        );
+
+        if (forceFace === 'back') {
+            return BackContent;
         }
 
         // Default to Front
-        return (
-            <div className={`w-full h-full rounded-2xl overflow-hidden bg-gray-900 text-white flex flex-col border-[12px] border-yellow-600 shadow-2xl`}>
+        const FrontContent = (
+            <div className={`w-full h-full rounded-2xl overflow-hidden bg-gray-900 text-white flex flex-col border-[12px] border-yellow-600 shadow-2xl relative`}>
                 {/* Inner Border */}
                 <div className={`absolute inset-0 border-[2px] border-yellow-400/50 rounded-lg pointer-events-none z-20`}></div>
 
                 {/* Header */}
                 <div className={`bg-gradient-to-b ${theme.from800} ${theme.to900} p-3 border-b-4 border-yellow-600 relative z-10`}>
-                    <div className="flex justify-between items-center pr-2">
+                    <div className="flex justify-between items-start pr-2">
                         <div className="flex-1 min-w-0">
                             <h3 className="font-['Cinzel'] font-bold text-sm leading-tight text-white drop-shadow-md truncate" title={achievement.title}>
                                 {achievement.title}
@@ -98,6 +119,15 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
                                 )}
                             </div>
                         </div>
+                        {!forceFace && (
+                            <button 
+                                onClick={handleFlip}
+                                className="ml-2 p-1.5 hover:bg-white/10 rounded-full transition-colors text-white/70 hover:text-white print:hidden"
+                                title="Flip Card"
+                            >
+                                <RotateCw size={16} />
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -165,10 +195,26 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
                 </div>
             </div>
         );
+
+        if (forceFace === 'front') return FrontContent;
+
+        return (
+            <div className={`relative w-full h-full transition-transform duration-700 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`} style={{ transformStyle: 'preserve-3d' }}>
+                {/* Front Face */}
+                <div className="absolute inset-0 backface-hidden" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(0deg) translateZ(1px)' }}>
+                    {FrontContent}
+                </div>
+                
+                {/* Back Face */}
+                <div className="absolute inset-0 backface-hidden" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg) translateZ(1px)' }}>
+                    {BackContent}
+                </div>
+            </div>
+        );
     };
 
     return (
-        <div className={`relative w-[320px] h-[480px] ${className}`}>
+        <div className={`relative w-[320px] h-[480px] group perspective-1000 ${className}`}>
             {renderContent()}
         </div>
     );
