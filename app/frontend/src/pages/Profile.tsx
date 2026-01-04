@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import type { Achievement, Quest, User } from '../types';
-import { LayoutGrid, List, Search, Eye, EyeOff, Skull, Edit2, Check, Printer, Download, Shield, Sparkles, ExternalLink } from 'lucide-react';
+import { LayoutGrid, List, Search, Eye, EyeOff, Skull, Edit2, Check, Share2, ExternalLink, X, Copy } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import QuestCard from '../components/QuestCard';
 import AchievementCard from '../components/AchievementCard';
@@ -15,18 +15,15 @@ const Profile: React.FC = () => {
   const [quests, setQuests] = useState<Quest[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'curator' | 'settings'>('curator');
   const [curatorTab, setCuratorTab] = useState<'quests' | 'achievements'>('quests');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [displayName, setDisplayName] = useState('');
-  const [apiKey, setApiKey] = useState('');
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const baseUrl = window.location.origin;
   const publicProfileUrl = `${baseUrl}/public/profile/${profile?.username}`;
-  const newQuestUrl = `${baseUrl}/quests/new`;
-  const newAchievementUrl = `${baseUrl}/achievements/new`;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,7 +35,6 @@ const Profile: React.FC = () => {
         ]);
         setProfile(profileRes.data);
         setDisplayName(profileRes.data.display_name || profileRes.data.username);
-        setApiKey(profileRes.data.openai_api_key || '');
         setQuests(questsRes.data);
         setAchievements(achievementsRes.data);
       } catch (error) {
@@ -54,13 +50,11 @@ const Profile: React.FC = () => {
     if (!profile) return;
     try {
       const res = await axios.put('http://localhost:8000/profile', { 
-          display_name: displayName,
-          openai_api_key: apiKey
+          display_name: displayName
       });
       const updatedProfile: User = { 
           ...profile, 
-          display_name: res.data.display_name,
-          openai_api_key: res.data.openai_api_key
+          display_name: res.data.display_name
       };
       setProfile(updatedProfile);
       updateUser(updatedProfile);
@@ -107,78 +101,90 @@ const Profile: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-dcc-card shadow rounded-lg p-6 text-center border dark:border-dcc-system/20">
-        <div className="w-24 h-24 bg-orange-100 dark:bg-orange-900/50 rounded-full mx-auto flex items-center justify-center text-3xl font-bold text-orange-600 dark:text-dcc-system mb-4">
-          {(profile.display_name || profile.username).charAt(0).toUpperCase()}
-        </div>
+      {/* Character Sheet Header */}
+      <div className="bg-white dark:bg-dcc-card shadow rounded-lg p-6 border dark:border-dcc-system/20 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
         
-        <div className="flex items-center justify-center gap-2 mb-1">
-            {isEditingProfile ? (
-                <div className="flex flex-col items-center gap-3 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border dark:border-gray-700">
-                    <div className="w-full">
-                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 text-left">Display Name</label>
-                        <input 
-                            type="text" 
-                            value={displayName} 
-                            onChange={(e) => setDisplayName(e.target.value)}
-                            className="w-full border dark:border-gray-600 rounded px-2 py-1 text-gray-900 dark:text-white bg-white dark:bg-gray-900"
-                            placeholder="Display Name"
-                        />
-                    </div>
-                    <div className="flex gap-2 mt-2 w-full justify-end">
-                        <button onClick={() => { setIsEditingProfile(false); setDisplayName(profile.display_name || profile.username); }} className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 px-3 py-1 rounded text-sm">
-                            Cancel
-                        </button>
-                        <button onClick={handleUpdateProfile} className="text-white bg-green-600 hover:bg-green-700 px-3 py-1 rounded flex items-center gap-1 text-sm shadow-sm">
-                            <Check className="w-3 h-3" /> Save
-                        </button>
-                    </div>
+        <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-6">
+            {/* Avatar Section */}
+            <div className="flex-shrink-0">
+                <div className="w-24 h-24 md:w-32 md:h-32 bg-orange-100 dark:bg-orange-900/50 rounded-full flex items-center justify-center text-4xl font-bold text-orange-600 dark:text-dcc-system border-4 border-white dark:border-dcc-card shadow-lg">
+                    {(profile.display_name || profile.username).charAt(0).toUpperCase()}
                 </div>
-            ) : (
-                <div className="flex flex-col items-center">
-                    <div className="flex items-center gap-2">
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{profile.display_name || profile.username}</h1>
-                        <button onClick={() => setIsEditingProfile(true)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                            <Edit2 className="w-4 h-4" />
-                        </button>
-                    </div>
-                    {profile.display_name && (
+            </div>
+
+            {/* Info Section */}
+            <div className="flex-grow text-center md:text-left space-y-2 w-full">
+                <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
+                    <div>
+                        {isEditingProfile ? (
+                            <div className="flex flex-col items-center md:items-start gap-2">
+                                <input 
+                                    type="text" 
+                                    value={displayName} 
+                                    onChange={(e) => setDisplayName(e.target.value)}
+                                    className="border dark:border-gray-600 rounded px-2 py-1 text-gray-900 dark:text-white bg-white dark:bg-gray-900 font-bold text-xl"
+                                    placeholder="Display Name"
+                                    autoFocus
+                                />
+                                <div className="flex gap-2">
+                                    <button onClick={handleUpdateProfile} className="text-xs bg-green-600 text-white px-2 py-1 rounded flex items-center gap-1 hover:bg-green-700">
+                                        <Check className="w-3 h-3" /> Save
+                                    </button>
+                                    <button onClick={() => { setIsEditingProfile(false); setDisplayName(profile.display_name || profile.username); }} className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2 group">
+                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{profile.display_name || profile.username}</h1>
+                                <button onClick={() => setIsEditingProfile(true)} className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                                    <Edit2 className="w-4 h-4" />
+                                </button>
+                            </div>
+                        )}
+                        <p className="text-orange-600 dark:text-dcc-system font-mono font-medium">Level {profile.level || 1} Crawler</p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">@{profile.username}</p>
-                    )}
+                    </div>
+
+                    <div className="flex gap-2">
+                        <button 
+                            onClick={() => setShowShareModal(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
+                        >
+                            <Share2 className="w-4 h-4" />
+                            Share Character
+                        </button>
+                        <a 
+                            href={publicProfileUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-4 py-2 bg-dcc-system text-white rounded-md text-sm font-medium hover:bg-orange-700 dark:hover:bg-orange-400 transition-colors shadow-sm"
+                        >
+                            <ExternalLink className="w-4 h-4" />
+                            Public View
+                        </a>
+                    </div>
                 </div>
-            )}
-        </div>
-        
-        <p className="text-gray-500 dark:text-gray-400">Level {profile.level || 1} Crawler</p>
-        
-        <div className="mt-4">
-            <Link to={`/public/profile/${profile.username}`} className="text-sm text-orange-600 dark:text-dcc-system hover:underline flex items-center justify-center gap-1">
-                View Public Profile
-            </Link>
-        </div>
-        
-        <div className="grid grid-cols-3 gap-4 mt-6 border-t dark:border-gray-700 pt-6">
-          <button 
-            onClick={() => { setActiveTab('curator'); setCuratorTab('quests'); }}
-            className="group hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg p-2 transition-colors"
-          >
-            <div className="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-dcc-system transition-colors">{profile.stats?.quests_active || 0}</div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">Active Quests</div>
-          </button>
-          <button 
-            onClick={() => { setActiveTab('curator'); setCuratorTab('quests'); }}
-            className="group hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg p-2 transition-colors"
-          >
-            <div className="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-dcc-system transition-colors">{profile.stats?.quests_completed || 0}</div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">Completed</div>
-          </button>
-          <button 
-            onClick={() => { setActiveTab('curator'); setCuratorTab('achievements'); }}
-            className="group hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg p-2 transition-colors"
-          >
-            <div className="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-dcc-system transition-colors">{profile.stats?.achievements_unlocked || 0}</div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">Achievements</div>
-          </button>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t dark:border-gray-700/50">
+                    <div className="text-center md:text-left">
+                        <div className="text-2xl font-bold text-gray-900 dark:text-white">{profile.stats?.quests_active || 0}</div>
+                        <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">Active Quests</div>
+                    </div>
+                    <div className="text-center md:text-left">
+                        <div className="text-2xl font-bold text-gray-900 dark:text-white">{profile.stats?.quests_completed || 0}</div>
+                        <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">Completed</div>
+                    </div>
+                    <div className="text-center md:text-left">
+                        <div className="text-2xl font-bold text-gray-900 dark:text-white">{profile.stats?.achievements_unlocked || 0}</div>
+                        <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">Achievements</div>
+                    </div>
+                </div>
+            </div>
         </div>
       </div>
 
@@ -219,37 +225,21 @@ const Profile: React.FC = () => {
             {/* Tabs */}
             <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
                 <button
-                    onClick={() => setActiveTab('curator')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'curator' ? 'bg-white dark:bg-dcc-card text-orange-600 dark:text-dcc-system shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                    onClick={() => setCuratorTab('quests')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${curatorTab === 'quests' ? 'bg-white dark:bg-dcc-card text-orange-600 dark:text-dcc-system shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
                 >
-                    Public Profile Curator
+                    Quests
                 </button>
                 <button
-                    onClick={() => setActiveTab('settings')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'settings' ? 'bg-white dark:bg-dcc-card text-orange-600 dark:text-dcc-system shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                    onClick={() => setCuratorTab('achievements')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${curatorTab === 'achievements' ? 'bg-white dark:bg-dcc-card text-orange-600 dark:text-dcc-system shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
                 >
-                    Account Settings
+                    Achievements
                 </button>
             </div>
 
             {/* Search & View Toggle */}
-            {activeTab === 'curator' && (
             <div className="flex items-center space-x-4 w-full sm:w-auto">
-                <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg mr-2">
-                    <button
-                        onClick={() => setCuratorTab('quests')}
-                        className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${curatorTab === 'quests' ? 'bg-white dark:bg-dcc-card text-orange-600 dark:text-dcc-system shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}
-                    >
-                        Quests
-                    </button>
-                    <button
-                        onClick={() => setCuratorTab('achievements')}
-                        className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${curatorTab === 'achievements' ? 'bg-white dark:bg-dcc-card text-orange-600 dark:text-dcc-system shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}
-                    >
-                        Achievements
-                    </button>
-                </div>
-
                 <div className="relative flex-1 sm:flex-none">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Search className="h-4 w-4 text-gray-400" />
@@ -277,35 +267,10 @@ const Profile: React.FC = () => {
                     </button>
                 </div>
             </div>
-            )}
         </div>
 
         {/* Content */}
-        {activeTab === 'curator' && (
-            <>
-            {/* Curator Header */}
-            <div className="mb-6 flex justify-between items-center bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-100 dark:border-orange-900/30">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-orange-100 dark:bg-orange-900/50 rounded-full text-orange-600 dark:text-dcc-system">
-                        <Eye className="w-5 h-5" />
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-gray-900 dark:text-white">Public Visibility</h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Toggle the eye icon on cards to show/hide them from your public profile.</p>
-                    </div>
-                </div>
-                <a 
-                    href={publicProfileUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                >
-                    <ExternalLink className="w-4 h-4" />
-                    View Public Profile
-                </a>
-            </div>
-
-            {curatorTab === 'quests' && (
+        {curatorTab === 'quests' && (
             viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
                     {filteredQuests.map(quest => (
@@ -455,198 +420,46 @@ const Profile: React.FC = () => {
                 </div>
             )
         )}
-        </>
-        )}
+      </div>
+      )}
 
-        {activeTab === 'settings' && (
-            <div className="space-y-8">
-                {/* QR Codes Section */}
-                <div className="bg-white dark:bg-dcc-card rounded-lg">
-                    <div className="flex flex-col sm:flex-row justify-between items-start mb-6 gap-4">
-                        <div>
-                            <h2 className="text-xl font-bold dark:text-dcc-system flex items-center gap-2">
-                                <Printer className="w-5 h-5" /> QR Codes
-                            </h2>
-                            <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm">Print these QR codes and attach them to your physical achievement box for quick access.</p>
-                        </div>
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white dark:bg-dcc-card rounded-xl shadow-2xl max-w-sm w-full p-6 relative border dark:border-gray-700">
+                <button 
+                    onClick={() => setShowShareModal(false)}
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                >
+                    <X className="w-5 h-5" />
+                </button>
+                
+                <div className="text-center space-y-4">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">Share Character</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Scan this code to view {profile.display_name || profile.username}'s public profile.
+                    </p>
+                    
+                    <div className="bg-white p-4 rounded-lg shadow-inner inline-block border dark:border-gray-200">
+                        <QRCodeSVG value={publicProfileUrl} size={200} />
+                    </div>
+                    
+                    <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 p-2 rounded text-sm font-mono text-gray-600 dark:text-gray-300 break-all">
+                        <span className="truncate">{publicProfileUrl}</span>
                         <button 
-                            onClick={() => window.print()}
-                            className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-200 dark:hover:bg-gray-600 text-sm flex items-center gap-2 print:hidden"
+                            onClick={() => {
+                                navigator.clipboard.writeText(publicProfileUrl);
+                                alert("Copied to clipboard!");
+                            }}
+                            className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+                            title="Copy URL"
                         >
-                            <Printer className="w-4 h-4" />
-                            Print QR Codes
+                            <Copy className="w-4 h-4" />
                         </button>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="flex flex-col items-center p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-                            <h3 className="text-lg font-bold mb-4 text-orange-600 dark:text-dcc-system">New Quest</h3>
-                            <div className="bg-white p-4 rounded-lg shadow-sm">
-                                <QRCodeSVG value={newQuestUrl} size={160} />
-                            </div>
-                            <p className="mt-4 text-xs text-gray-500 dark:text-gray-400 font-mono break-all text-center">{newQuestUrl}</p>
-                        </div>
-
-                        <div className="flex flex-col items-center p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-                            <h3 className="text-lg font-bold mb-4 text-green-600 dark:text-green-400">New Achievement</h3>
-                            <div className="bg-white p-4 rounded-lg shadow-sm">
-                                <QRCodeSVG value={newAchievementUrl} size={160} />
-                            </div>
-                            <p className="mt-4 text-xs text-gray-500 dark:text-gray-400 font-mono break-all text-center">{newAchievementUrl}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <hr className="border-gray-200 dark:border-gray-700" />
-
-                {/* GenAI Settings */}
-                <div className="bg-white dark:bg-dcc-card rounded-lg">
-                    <h2 className="text-xl font-bold mb-4 dark:text-dcc-system flex items-center gap-2">
-                        <Sparkles className="w-5 h-5" /> GenAI Settings
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">Configure your OpenAI API key to enable AI-generated flavor text for achievements.</p>
-                    
-                    <div className="max-w-xl">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">OpenAI API Key</label>
-                        <div className="flex gap-2">
-                            <input 
-                                type="password" 
-                                value={apiKey} 
-                                onChange={(e) => setApiKey(e.target.value)}
-                                className="flex-1 border dark:border-gray-600 rounded px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-900 text-sm font-mono"
-                                placeholder="sk-..."
-                            />
-                            <button 
-                                onClick={handleUpdateProfile}
-                                className="px-4 py-2 bg-dcc-system text-white rounded hover:bg-orange-700 dark:hover:bg-orange-400 text-sm font-medium shadow-sm"
-                            >
-                                Save Key
-                            </button>
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                            Your key is stored securely in your local database and is only used for generating descriptions.
-                        </p>
-                    </div>
-                </div>
-
-                <hr className="border-gray-200 dark:border-gray-700" />
-
-                {/* Privacy Settings */}
-                <div className="bg-white dark:bg-dcc-card rounded-lg">
-                    <h2 className="text-xl font-bold mb-4 dark:text-dcc-system flex items-center gap-2">
-                        <Shield className="w-5 h-5" /> Privacy Settings
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">Manage the visibility of your quests and achievements on your public profile.</p>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="p-4 border dark:border-gray-700 rounded-lg">
-                            <h3 className="font-semibold mb-3 dark:text-white">Quests</h3>
-                            <div className="flex gap-2">
-                                <button 
-                                    onClick={async () => {
-                                        if(window.confirm("Hide all quests from public profile?")) {
-                                            await axios.post('http://localhost:8000/quests/bulk-visibility', { is_hidden: true });
-                                            alert("All quests hidden.");
-                                            window.location.reload();
-                                        }
-                                    }}
-                                    className="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-sm flex-1"
-                                >
-                                    Hide All
-                                </button>
-                                <button 
-                                    onClick={async () => {
-                                        if(window.confirm("Show all quests on public profile?")) {
-                                            await axios.post('http://localhost:8000/quests/bulk-visibility', { is_hidden: false });
-                                            alert("All quests visible.");
-                                            window.location.reload();
-                                        }
-                                    }}
-                                    className="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-sm flex-1"
-                                >
-                                    Show All
-                                </button>
-                            </div>
-                        </div>
-                        <div className="p-4 border dark:border-gray-700 rounded-lg">
-                            <h3 className="font-semibold mb-3 dark:text-white">Achievements</h3>
-                            <div className="flex gap-2">
-                                <button 
-                                    onClick={async () => {
-                                        if(window.confirm("Hide all achievements from public profile?")) {
-                                            await axios.post('http://localhost:8000/achievements/bulk-visibility', { is_hidden: true });
-                                            alert("All achievements hidden.");
-                                            window.location.reload();
-                                        }
-                                    }}
-                                    className="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-sm flex-1"
-                                >
-                                    Hide All
-                                </button>
-                                <button 
-                                    onClick={async () => {
-                                        if(window.confirm("Show all achievements on public profile?")) {
-                                            await axios.post('http://localhost:8000/achievements/bulk-visibility', { is_hidden: false });
-                                            alert("All achievements visible.");
-                                            window.location.reload();
-                                        }
-                                    }}
-                                    className="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-sm flex-1"
-                                >
-                                    Show All
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <hr className="border-gray-200 dark:border-gray-700" />
-
-                {/* Data Export */}
-                <div className="bg-white dark:bg-dcc-card rounded-lg">
-                    <h2 className="text-xl font-bold mb-4 dark:text-dcc-system flex items-center gap-2">
-                        <Download className="w-5 h-5" /> Data Export
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">Download a copy of all your data.</p>
-                    <button 
-                        className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 dark:bg-dcc-system dark:text-black dark:hover:bg-orange-400 flex items-center gap-2 text-sm"
-                        onClick={() => {
-                            window.open('http://localhost:8000/quests', '_blank');
-                        }}
-                    >
-                        <Download className="w-4 h-4" /> Download Quests JSON
-                    </button>
-                </div>
-
-                <hr className="border-gray-200 dark:border-gray-700" />
-
-                {/* Danger Zone */}
-                <div className="bg-red-50 dark:bg-red-900/10 rounded-lg p-6 border border-red-200 dark:border-red-900/30">
-                    <h2 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400 flex items-center gap-2">
-                        <Skull className="w-5 h-5" /> Danger Zone
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">Permanently delete all quests and achievements. This cannot be undone.</p>
-                    <button 
-                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-sm shadow-sm"
-                        onClick={async () => {
-                            if (window.confirm("Are you sure you want to delete ALL data? This cannot be undone.")) {
-                                try {
-                                    await axios.post('http://localhost:8000/reset');
-                                    alert("Data reset successfully.");
-                                    window.location.reload();
-                                } catch (error) {
-                                    console.error("Error resetting data:", error);
-                                    alert("Error resetting data.");
-                                }
-                            }
-                        }}
-                    >
-                        Reset All Data
-                    </button>
                 </div>
             </div>
-        )}
-      </div>
+        </div>
       )}
     </div>
   );

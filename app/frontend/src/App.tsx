@@ -11,6 +11,8 @@ import NewQuest from './pages/NewQuest';
 import NewAchievement from './pages/NewAchievement';
 import Profile from './pages/Profile';
 import PublicProfile from './pages/PublicProfile';
+import Settings from './pages/Settings';
+import Tools from './pages/Tools';
 
 import QuestDetail from './pages/QuestDetail';
 import AchievementDetail from './pages/AchievementDetail';
@@ -42,6 +44,8 @@ function App() {
               <Route path="achievements/new" element={<NewAchievement />} />
               <Route path="achievements/:id" element={<AchievementDetail />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="tools" element={<Tools />} />
             </Route>
           </Routes>
         </Router>

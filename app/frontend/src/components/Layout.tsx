@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
-import { LayoutDashboard, PlusCircle, Trophy, User, Moon, Sun, LogOut } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Trophy, User, Moon, Sun, LogOut, Settings, Printer } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -34,11 +34,25 @@ const Layout: React.FC = () => {
                 </Link>
                 <Link to="/profile" className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:border-dcc-system hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
                   <User className="w-4 h-4 mr-2" />
-                  Profile
+                  Character
                 </Link>
               </div>
             </div>
             <div className="flex items-center space-x-2">
+                <Link 
+                    to="/tools"
+                    className="p-2 rounded-full text-gray-500 dark:text-dcc-system hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
+                    title="Tools & Printables"
+                >
+                    <Printer className="w-5 h-5" />
+                </Link>
+                <Link 
+                    to="/settings"
+                    className="p-2 rounded-full text-gray-500 dark:text-dcc-system hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
+                    title="Settings"
+                >
+                    <Settings className="w-5 h-5" />
+                </Link>
                 <button 
                     onClick={toggleTheme}
                     className="p-2 rounded-full text-gray-500 dark:text-dcc-system hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
@@ -62,6 +76,7 @@ const Layout: React.FC = () => {
             <Link to="/quests/new" className="p-2 text-gray-500 dark:text-gray-400"><PlusCircle /></Link>
             <Link to="/achievements/new" className="p-2 text-gray-500 dark:text-gray-400"><Trophy /></Link>
             <Link to="/profile" className="p-2 text-gray-500 dark:text-gray-400"><User /></Link>
+            <Link to="/settings" className="p-2 text-gray-500 dark:text-gray-400"><Settings /></Link>
         </div>
       </nav>
 
