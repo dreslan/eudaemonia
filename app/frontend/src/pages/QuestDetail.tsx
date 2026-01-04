@@ -201,7 +201,8 @@ const QuestDetail: React.FC = () => {
                       <thead className="bg-gray-50 dark:bg-gray-800">
                           <tr>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dimension</th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Context</th>
                               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                           </tr>
@@ -210,12 +211,15 @@ const QuestDetail: React.FC = () => {
                           {linkedAchievements.map(ach => (
                               <tr key={ach.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">
-                                      {new Date(ach.date_completed).toLocaleDateString()}
+                                      {new Date(ach.date_completed).toLocaleString()}
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap">
                                       <Link to={`/achievements/${ach.id}`} className="text-orange-600 dark:text-dcc-system hover:underline font-bold">
                                           {ach.title}
                                       </Link>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                      <DimensionBadge dimension={ach.dimension} />
                                   </td>
                                   <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
                                       {ach.context}

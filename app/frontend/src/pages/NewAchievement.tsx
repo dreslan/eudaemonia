@@ -13,7 +13,7 @@ const NewAchievement: React.FC = () => {
     title: '',
     context: '',
     dimension: null,
-    date_completed: new Date().toISOString().split('T')[0],
+    date_completed: new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().slice(0, 16),
     quest_id: '',
     use_genai: false
   });
@@ -144,7 +144,7 @@ const NewAchievement: React.FC = () => {
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date Completed</label>
                     <input
-                    type="date"
+                    type="datetime-local"
                     name="date_completed"
                     value={formData.date_completed}
                     onChange={handleChange}
