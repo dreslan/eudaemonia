@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { RotateCw } from 'lucide-react';
 import type { Achievement } from '../types';
 import { dimensionColors } from '../utils/colors';
 import { getDimensionIcon } from '../utils/dimensionIcons';
@@ -72,14 +71,6 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
                 <div className="bg-gray-900 p-4 border-t-4 border-yellow-600 relative z-10 text-center shadow-md">
                     <h3 className="font-['Cinzel'] font-black text-xl text-yellow-500 tracking-widest drop-shadow-md">NEW ACHIEVEMENT!</h3>
                 </div>
-
-                {!forceFace && (
-                    <div className="absolute top-4 right-4 z-20 print:hidden">
-                        <div className="p-2 bg-black/20 rounded-full text-white/70">
-                            <RotateCw size={20} />
-                        </div>
-                    </div>
-                )}
             </div>
         );
 
@@ -114,11 +105,6 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
                                 )}
                             </div>
                         </div>
-                        {!forceFace && (
-                            <div className="ml-2 p-1.5 bg-black/20 rounded-full text-white/70 print:hidden">
-                                <RotateCw size={16} />
-                            </div>
-                        )}
                     </div>
                 </div>
 
