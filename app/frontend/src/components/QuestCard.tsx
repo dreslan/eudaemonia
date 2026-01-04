@@ -4,7 +4,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Printer, ArrowRight, RotateCw } from 'lucide-react';
 import type { Quest } from '../types';
 import { dimensionColors } from '../utils/colors';
-import { getAsciiArt } from '../utils/ascii';
+import { getDimensionIcon } from '../utils/dimensionIcons';
 
 interface QuestCardProps {
     quest: Quest;
@@ -25,7 +25,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
     const dimension = quest.dimension || 'default';
     const theme = dimensionColors[dimension] || dimensionColors.default;
     const questUrl = `${window.location.origin}/quests/${quest.id}`;
-    const asciiArt = getAsciiArt(dimension);
+    const Icon = getDimensionIcon(dimension);
 
     const handlePrint = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -125,10 +125,8 @@ const QuestCard: React.FC<QuestCardProps> = ({
 
                 {/* Art Area */}
                 <div className={`h-48 bg-black relative overflow-hidden border-b-4 ${theme.border700} group-hover:brightness-110 transition-all duration-500`}>
-                    <div className="absolute inset-0 flex items-center justify-center opacity-30 select-none">
-                        <pre className={`text-[8px] leading-[8px] font-mono ${theme.text200} whitespace-pre`}>
-                            {asciiArt}
-                        </pre>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-20 select-none">
+                        <Icon size={140} className={`${theme.text200} drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]`} strokeWidth={1} />
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
                 </div>

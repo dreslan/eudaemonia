@@ -4,7 +4,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Printer, ExternalLink } from 'lucide-react';
 import type { Achievement } from '../types';
 import { dimensionColors } from '../utils/colors';
-import { getAsciiArt } from '../utils/ascii';
+import { getDimensionIcon } from '../utils/dimensionIcons';
 
 interface AchievementCardProps {
     achievement: Achievement;
@@ -26,7 +26,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
     const dimension = achievement.dimension || 'default';
     const theme = dimensionColors[dimension] || dimensionColors.default;
     const shareUrl = `${window.location.origin}/public/achievement/${achievement.id}`;
-    const asciiArt = getAsciiArt(dimension);
+    const Icon = getDimensionIcon(dimension);
 
     const handlePrint = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -109,10 +109,8 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
                             className="w-full h-full object-cover opacity-90"
                         />
                     ) : (
-                        <div className="absolute inset-0 flex items-center justify-center opacity-30 select-none">
-                            <pre className={`text-[8px] leading-[8px] font-mono ${theme.text200} whitespace-pre`}>
-                                {asciiArt}
-                            </pre>
+                        <div className="absolute inset-0 flex items-center justify-center opacity-20 select-none">
+                            <Icon size={120} className={`${theme.text200} drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]`} strokeWidth={1} />
                         </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
