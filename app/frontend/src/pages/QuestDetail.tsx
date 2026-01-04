@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import type { Quest, Achievement, Status } from '../types';
-import { ArrowLeft, Edit, Trash2, Plus, LayoutGrid, List, Calendar } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Plus, LayoutGrid, List, Calendar, Play, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import AchievementCard from '../components/AchievementCard';
 import Timeline from '../components/Timeline';
@@ -72,20 +72,33 @@ const QuestDetail: React.FC = () => {
             <ArrowLeft className="w-4 h-4 mr-1" /> Back to Dashboard
         </Link>
         <div className="flex flex-wrap gap-2">
-            {/* Status Dropdown */}
-            <select 
-                value={quest.status}
-                onChange={(e) => handleStatusChange(e.target.value as Status)}
-                className={`text-sm font-semibold rounded-md px-3 py-2 border-0 cursor-pointer focus:ring-2 focus:ring-orange-500 ${
-                    quest.status === 'active' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
-                    quest.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                }`}
-            >
-                <option value="active">Active</option>
-                <option value="backlog">Backlog</option>
-                <option value="completed">Completed</option>
-            </select>
+            {/* Status Actions */}
+            {quest.status === 'backlog' && (
+                <button
+                    onClick={() => handleStatusChange('active')}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:bg-green-700 dark:hover:bg-green-600"
+                >
+                    <Play className="w-4 h-4 mr-2" />
+                    Start Quest
+                </button>
+            )}
+            
+            {quest.status === 'active' && (
+                <button
+                    onClick={() => handleStatusChange('completed')}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-dcc-system hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 dark:hover:bg-orange-400"
+                >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Complete Quest
+                </button>
+            )}
+
+            {quest.status === 'completed' && (
+                <span className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 cursor-default">
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Completed
+                </span>
+            )}
 
             <Link
                 to={`/quests/${id}/edit`}
