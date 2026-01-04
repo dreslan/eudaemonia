@@ -139,15 +139,15 @@ const Dashboard: React.FC = () => {
           </div>
       ) : (
           viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
                 {filteredQuests.map(quest => (
-                    <div key={quest.id} className="flex flex-col gap-2 w-full max-w-sm">
+                    <div key={quest.id} className="flex flex-col gap-2 w-full max-w-sm items-center">
                         <QuestCard 
                             quest={quest} 
                             username={user?.display_name || user?.username}
                         />
                         {/* Quick Actions */}
-                        <div className="flex justify-end px-2">
+                        <div className="flex justify-end px-2 w-[320px]">
                             <select 
                                 value={quest.status}
                                 onChange={(e) => handleStatusChange(quest.id, e.target.value as Status)}
