@@ -39,7 +39,10 @@ const PrintView: React.FC = () => {
     if (!data) return <div className="text-center p-10">Loading for print...</div>;
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-white p-8 print:p-0 print:bg-transparent">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-white p-8 print:p-0 print:bg-transparent relative">
+            <div className="absolute top-8 print:hidden text-gray-400 text-xs uppercase tracking-widest animate-pulse">
+                Preparing Print Preview...
+            </div>
             <div className="print:scale-100 transform scale-125">
                 {type === 'quest' ? (
                     <div className="flex flex-col md:flex-row print:flex-row gap-8 print:gap-4 items-center">
@@ -70,9 +73,6 @@ const PrintView: React.FC = () => {
                         />
                     </div>
                 )}
-            </div>
-            <div className="mt-8 print:hidden text-gray-500 text-sm">
-                Printing should start automatically...
             </div>
         </div>
     );
