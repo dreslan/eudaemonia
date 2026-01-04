@@ -24,9 +24,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
     hideActions = false
 }) => {
     const dimension = achievement.dimension || 'default';
-    const colorClass = dimensionColors[dimension] || dimensionColors.default;
-    const borderColor = colorClass.split(' ')[1].replace('border-', '');
-    const bgColor = colorClass.split(' ')[0].replace('bg-', '');
+    const theme = dimensionColors[dimension] || dimensionColors.default;
     const shareUrl = `${window.location.origin}/public/achievement/${achievement.id}`;
     const asciiArt = getAsciiArt(dimension);
 
@@ -76,14 +74,14 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
                 <div className={`absolute inset-0 border-[2px] border-yellow-400/50 rounded-lg pointer-events-none z-20`}></div>
 
                 {/* Header */}
-                <div className={`bg-gradient-to-b from-${bgColor}-800 to-${bgColor}-900 p-3 border-b-4 border-yellow-600 relative z-10`}>
+                <div className={`bg-gradient-to-b ${theme.from800} ${theme.to900} p-3 border-b-4 border-yellow-600 relative z-10`}>
                     <div className="flex justify-between items-center pr-2">
                         <div className="flex-1 min-w-0">
                             <h3 className="font-['Cinzel'] font-bold text-sm leading-tight text-white drop-shadow-md truncate" title={achievement.title}>
                                 {achievement.title}
                             </h3>
                             <div className="flex items-center gap-2 mt-1">
-                                <span className={`text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-black/30 text-${borderColor}-200 border border-${borderColor}-500/30`}>
+                                <span className={`text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-black/30 ${theme.text200} border ${theme.border500} border-opacity-30`}>
                                     {dimension}
                                 </span>
                                 {questTitle && (
@@ -106,7 +104,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
                         />
                     ) : (
                         <div className="absolute inset-0 flex items-center justify-center opacity-30 select-none">
-                            <pre className="text-[8px] leading-[8px] font-mono text-${borderColor}-200 whitespace-pre">
+                            <pre className={`text-[8px] leading-[8px] font-mono ${theme.text200} whitespace-pre`}>
                                 {asciiArt}
                             </pre>
                         </div>

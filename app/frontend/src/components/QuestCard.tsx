@@ -21,9 +21,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
 }) => {
     const [isFlipped, setIsFlipped] = useState(false);
     const dimension = quest.dimension || 'default';
-    const colorClass = dimensionColors[dimension] || dimensionColors.default;
-    const borderColor = colorClass.split(' ')[1].replace('border-', '');
-    const bgColor = colorClass.split(' ')[0].replace('bg-', '');
+    const theme = dimensionColors[dimension] || dimensionColors.default;
     const questUrl = `${window.location.origin}/quests/${quest.id}`;
     const asciiArt = getAsciiArt(dimension);
 
@@ -42,19 +40,19 @@ const QuestCard: React.FC<QuestCardProps> = ({
     // Render content based on face
     const renderContent = () => {
         const BackContent = (
-            <div className={`w-full h-full rounded-2xl overflow-hidden bg-${bgColor}-900 border-[12px] border-${borderColor}-900 shadow-2xl flex flex-col relative`}>
+            <div className={`w-full h-full rounded-2xl overflow-hidden ${theme.bg900} border-[12px] ${theme.border900} shadow-2xl flex flex-col relative`}>
                 {/* Pattern Background */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none select-none rounded-2xl">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] -rotate-45 opacity-10 flex items-center justify-center">
-                        <p className={`text-[10px] font-black uppercase text-${borderColor}-200 tracking-widest leading-relaxed text-center w-full break-words`}>
+                        <p className={`text-[10px] font-black uppercase ${theme.text200} tracking-widest leading-relaxed text-center w-full break-words`}>
                             {Array.from({ length: 800 }).fill("QUEST CARD").join(" ")}
                         </p>
                     </div>
                 </div>
 
                 {/* Header */}
-                <div className={`bg-gray-900 p-4 border-b-4 border-${borderColor}-700 relative z-10 text-center shadow-md`}>
-                    <h3 className={`font-['Cinzel'] font-black text-xl text-${borderColor}-400 tracking-widest drop-shadow-md`}>QUEST CARD</h3>
+                <div className={`bg-gray-900 p-4 border-b-4 ${theme.border700} relative z-10 text-center shadow-md`}>
+                    <h3 className={`font-['Cinzel'] font-black text-xl ${theme.text400} tracking-widest drop-shadow-md`}>QUEST CARD</h3>
                 </div>
 
                 {/* Body - QR Code */}
@@ -65,8 +63,8 @@ const QuestCard: React.FC<QuestCardProps> = ({
                 </div>
                 
                 {/* Footer */}
-                <div className={`bg-gray-900 p-4 border-t-4 border-${borderColor}-700 relative z-10 text-center shadow-md`}>
-                    <h3 className={`font-['Cinzel'] font-black text-xl text-${borderColor}-400 tracking-widest drop-shadow-md`}>QUEST CARD</h3>
+                <div className={`bg-gray-900 p-4 border-t-4 ${theme.border700} relative z-10 text-center shadow-md`}>
+                    <h3 className={`font-['Cinzel'] font-black text-xl ${theme.text400} tracking-widest drop-shadow-md`}>QUEST CARD</h3>
                 </div>
 
                 {!forceFace && (
@@ -88,19 +86,19 @@ const QuestCard: React.FC<QuestCardProps> = ({
 
         // Default to Front (or 3D wrapper if no forceFace)
         const FrontContent = (
-            <div className={`absolute inset-0 backface-hidden rounded-2xl overflow-hidden bg-gray-900 text-white flex flex-col border-[12px] border-${borderColor}-900 shadow-2xl ${forceFace ? 'relative w-full h-full' : ''}`}>
+            <div className={`absolute inset-0 backface-hidden rounded-2xl overflow-hidden bg-gray-900 text-white flex flex-col border-[12px] ${theme.border900} shadow-2xl ${forceFace ? 'relative w-full h-full' : ''}`}>
                 {/* Inner Border */}
-                <div className={`absolute inset-0 border-[2px] border-${borderColor}-400/50 rounded-lg pointer-events-none z-20`}></div>
+                <div className={`absolute inset-0 border-[2px] ${theme.border400} opacity-50 rounded-lg pointer-events-none z-20`}></div>
                 
                 {/* Header */}
-                <div className={`bg-gradient-to-b from-${bgColor}-800 to-${bgColor}-900 p-3 border-b-4 border-${borderColor}-700 relative z-10`}>
+                <div className={`bg-gradient-to-b ${theme.from800} ${theme.to900} p-3 border-b-4 ${theme.border700} relative z-10`}>
                     <div className="flex justify-between items-start">
                         <div className="flex-1">
                             <h3 className="font-['Cinzel'] font-bold text-lg leading-tight text-white drop-shadow-md truncate">
                                 {quest.title}
                             </h3>
                             <div className="flex items-center gap-2 mt-1">
-                                <span className={`text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-black/30 text-${borderColor}-200 border border-${borderColor}-500/30`}>
+                                <span className={`text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-black/30 ${theme.text200} border ${theme.border500} border-opacity-30`}>
                                     {dimension}
                                 </span>
                             </div>
@@ -118,9 +116,9 @@ const QuestCard: React.FC<QuestCardProps> = ({
                 </div>
 
                 {/* Art Area */}
-                <div className="h-48 bg-black relative overflow-hidden border-b-4 border-${borderColor}-700 group-hover:brightness-110 transition-all duration-500">
+                <div className={`h-48 bg-black relative overflow-hidden border-b-4 ${theme.border700} group-hover:brightness-110 transition-all duration-500`}>
                     <div className="absolute inset-0 flex items-center justify-center opacity-30 select-none">
-                        <pre className="text-[8px] leading-[8px] font-mono text-${borderColor}-200 whitespace-pre">
+                        <pre className={`text-[8px] leading-[8px] font-mono ${theme.text200} whitespace-pre`}>
                             {asciiArt}
                         </pre>
                     </div>
@@ -141,7 +139,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className={`bg-gray-900 p-3 border-t-2 border-${borderColor}-900 flex justify-between items-center relative z-10`}>
+                <div className={`bg-gray-900 p-3 border-t-2 ${theme.border900} flex justify-between items-center relative z-10`}>
                     <div className="flex flex-col">
                         <span className="text-[9px] text-gray-500 uppercase tracking-widest">Status</span>
                         <span className={`text-xs font-bold uppercase ${quest.status === 'active' ? 'text-green-400' : 'text-gray-400'}`}>
@@ -161,7 +159,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
                                 </button>
                                 <Link 
                                     to={`/quests/${quest.id}`}
-                                    className="text-${borderColor}-400 hover:text-${borderColor}-200 transition-colors"
+                                    className={`${theme.text400} hover:${theme.text200} transition-colors`}
                                     title="View Details"
                                 >
                                     <ArrowRight size={18} />

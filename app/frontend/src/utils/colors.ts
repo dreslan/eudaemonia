@@ -1,11 +1,133 @@
-export const dimensionColors: Record<string, string> = {
-    intellectual: 'bg-blue-600 border-blue-400',
-    physical: 'bg-red-600 border-red-400',
-    financial: 'bg-green-600 border-green-400',
-    environmental: 'bg-emerald-600 border-emerald-400',
-    vocational: 'bg-amber-600 border-amber-400',
-    social: 'bg-purple-600 border-purple-400',
-    emotional: 'bg-pink-600 border-pink-400',
-    spiritual: 'bg-indigo-600 border-indigo-400',
-    default: 'bg-gray-600 border-gray-400'
+export interface DimensionTheme {
+    base: string;
+    bg900: string;
+    bg800: string;
+    border900: string;
+    border700: string;
+    border500: string;
+    border400: string;
+    text200: string;
+    text400: string;
+    from800: string;
+    to900: string;
+}
+
+export const dimensionColors: Record<string, DimensionTheme> = {
+    intellectual: {
+        base: 'blue',
+        bg900: 'bg-blue-900',
+        bg800: 'bg-blue-800',
+        border900: 'border-blue-900',
+        border700: 'border-blue-700',
+        border500: 'border-blue-500',
+        border400: 'border-blue-400',
+        text200: 'text-blue-200',
+        text400: 'text-blue-400',
+        from800: 'from-blue-800',
+        to900: 'to-blue-900',
+    },
+    physical: {
+        base: 'red',
+        bg900: 'bg-red-900',
+        bg800: 'bg-red-800',
+        border900: 'border-red-900',
+        border700: 'border-red-700',
+        border500: 'border-red-500',
+        border400: 'border-red-400',
+        text200: 'text-red-200',
+        text400: 'text-red-400',
+        from800: 'from-red-800',
+        to900: 'to-red-900',
+    },
+    financial: {
+        base: 'green',
+        bg900: 'bg-green-900',
+        bg800: 'bg-green-800',
+        border900: 'border-green-900',
+        border700: 'border-green-700',
+        border500: 'border-green-500',
+        border400: 'border-green-400',
+        text200: 'text-green-200',
+        text400: 'text-green-400',
+        from800: 'from-green-800',
+        to900: 'to-green-900',
+    },
+    environmental: {
+        base: 'emerald',
+        bg900: 'bg-emerald-900',
+        bg800: 'bg-emerald-800',
+        border900: 'border-emerald-900',
+        border700: 'border-emerald-700',
+        border500: 'border-emerald-500',
+        border400: 'border-emerald-400',
+        text200: 'text-emerald-200',
+        text400: 'text-emerald-400',
+        from800: 'from-emerald-800',
+        to900: 'to-emerald-900',
+    },
+    vocational: {
+        base: 'amber',
+        bg900: 'bg-amber-900',
+        bg800: 'bg-amber-800',
+        border900: 'border-amber-900',
+        border700: 'border-amber-700',
+        border500: 'border-amber-500',
+        border400: 'border-amber-400',
+        text200: 'text-amber-200',
+        text400: 'text-amber-400',
+        from800: 'from-amber-800',
+        to900: 'to-amber-900',
+    },
+    social: {
+        base: 'purple',
+        bg900: 'bg-purple-900',
+        bg800: 'bg-purple-800',
+        border900: 'border-purple-900',
+        border700: 'border-purple-700',
+        border500: 'border-purple-500',
+        border400: 'border-purple-400',
+        text200: 'text-purple-200',
+        text400: 'text-purple-400',
+        from800: 'from-purple-800',
+        to900: 'to-purple-900',
+    },
+    emotional: {
+        base: 'pink',
+        bg900: 'bg-pink-900',
+        bg800: 'bg-pink-800',
+        border900: 'border-pink-900',
+        border700: 'border-pink-700',
+        border500: 'border-pink-500',
+        border400: 'border-pink-400',
+        text200: 'text-pink-200',
+        text400: 'text-pink-400',
+        from800: 'from-pink-800',
+        to900: 'to-pink-900',
+    },
+    spiritual: {
+        base: 'indigo',
+        bg900: 'bg-indigo-900',
+        bg800: 'bg-indigo-800',
+        border900: 'border-indigo-900',
+        border700: 'border-indigo-700',
+        border500: 'border-indigo-500',
+        border400: 'border-indigo-400',
+        text200: 'text-indigo-200',
+        text400: 'text-indigo-400',
+        from800: 'from-indigo-800',
+        to900: 'to-indigo-900',
+    },
+    default: {
+        base: 'gray',
+        bg900: 'bg-gray-900',
+        bg800: 'bg-gray-800',
+        border900: 'border-gray-900',
+        border700: 'border-gray-700',
+        border500: 'border-gray-500',
+        border400: 'border-gray-400',
+        text200: 'text-gray-200',
+        text400: 'text-gray-400',
+        from800: 'from-gray-800',
+        to900: 'to-gray-900',
+    }
 };
