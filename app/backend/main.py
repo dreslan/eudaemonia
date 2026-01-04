@@ -142,7 +142,8 @@ def update_quest(quest_id: str, update_data: QuestUpdate, current_user: UserInDB
         dcc_rewards = ["A Silver Loot Box (Empty).", "+500 XP.", "A pat on the back."]
 
         if not new_ach.ai_description:
-            new_ach.ai_description = f"{random.choice(dcc_intros)} You have managed to {new_ach.context}. {random.choice(dcc_insults)}"
+            # Fix grammar: context starts with "Completed...", so "You {context.lower()}" works better.
+            new_ach.ai_description = f"{random.choice(dcc_intros)} You {new_ach.context[0].lower() + new_ach.context[1:]}. {random.choice(dcc_insults)}"
         
         if not new_ach.ai_reward:
             new_ach.ai_reward = random.choice(dcc_rewards)

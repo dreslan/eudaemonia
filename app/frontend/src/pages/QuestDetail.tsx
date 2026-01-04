@@ -57,6 +57,20 @@ const QuestDetail: React.FC = () => {
       try {
           const res = await axios.patch(`http://localhost:8000/quests/${id}`, { status: newStatus });
           setQuest(res.data);
+          
+          // Refresh achievements to show the new "Quest Complete" entry immediately
+          if (newStatus === 'completed') {
+              const achievementsRes = await axios.get('http://localhost:8000/achievements');
+              const linked = achievementsRes.data
+                .map((a: Achievement, index: number) => ({ ...a, _originalIndex: index }))
+                .filter((a: Achievement & { _originalIndex: number }) => a.quest_id === id)
+                .sort((a: Achievement & { _originalIndex: number }, b: Achievement & { _originalIndex: number }) => {
+                    const dateDiff = new Date(a.date_completed).getTime() - new Date(b.date_completed).getTime();
+                    if (dateDiff !== 0) return dateDiff;
+                    return a._originalIndex - b._originalIndex;
+                });
+              setLinkedAchievements(linked);
+          }
       } catch (error) {
           console.error("Error updating quest status", error);
       }
@@ -204,7 +218,7 @@ const QuestDetail: React.FC = () => {
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dimension</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Context</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
                               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                           </tr>
                       </thead>
