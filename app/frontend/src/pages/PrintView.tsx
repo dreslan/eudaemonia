@@ -13,6 +13,7 @@ const PrintView: React.FC = () => {
     const type = location.pathname.includes('quests') ? 'quest' : 'achievement';
     
     const [data, setData] = useState<Quest | Achievement | null>(null);
+    const [linkedQuest, setLinkedQuest] = useState<Quest | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -20,6 +21,15 @@ const PrintView: React.FC = () => {
                 const endpoint = type === 'quest' ? 'quests' : 'achievements';
                 const res = await axios.get(`http://localhost:8000/${endpoint}/${id}`);
                 setData(res.data);
+
+                if (type === 'achievement' && res.data.quest_id) {
+                    try {
+                        const questRes = await axios.get(`http://localhost:8000/quests/${res.data.quest_id}`);
+                        setLinkedQuest(questRes.data);
+                    } catch (qError) {
+                        console.log("Could not fetch linked quest for print", qError);
+                    }
+                }
             } catch (error) {
                 console.error("Error fetching data for print", error);
             }
@@ -64,11 +74,13 @@ const PrintView: React.FC = () => {
                         <AchievementCard 
                             achievement={data as Achievement} 
                             username={user?.display_name || user?.username}
+                            questTitle={linkedQuest?.title}
                             forceFace="front"
                         />
                         <AchievementCard 
                             achievement={data as Achievement} 
                             username={user?.display_name || user?.username}
+                            questTitle={linkedQuest?.title}
                             forceFace="back"
                         />
                     </div>

@@ -190,6 +190,7 @@ const QuestDetail: React.FC = () => {
                           key={ach.id} 
                           achievement={ach} 
                           username={user?.display_name || user?.username}
+                          questTitle={quest.title}
                       />
                   ))}
               </div>

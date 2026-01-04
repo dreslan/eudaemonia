@@ -360,6 +360,7 @@ const Profile: React.FC = () => {
                             <AchievementCard 
                                 achievement={ach} 
                                 username={profile?.display_name || profile?.username}
+                                questTitle={quests.find(q => q.id === ach.quest_id)?.title}
                                 className={ach.is_hidden ? 'opacity-75' : ''} 
                             />
                             <button

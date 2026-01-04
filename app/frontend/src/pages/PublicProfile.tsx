@@ -203,6 +203,7 @@ const PublicProfile: React.FC = () => {
                             key={ach.id} 
                             achievement={ach} 
                             username={profile?.display_name || profile?.username}
+                            questTitle={quests.find(q => q.id === ach.quest_id)?.title}
                         />
                     ))}
                 </div>
