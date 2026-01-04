@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import type { Achievement, Quest } from '../types';
-import { LayoutGrid, List, Search, Eye, EyeOff, Skull, Edit2, Check, Settings, Printer, Download, Shield } from 'lucide-react';
+import { LayoutGrid, List, Search, Eye, EyeOff, Skull, Edit2, Check, Printer, Download, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import QuestCard from '../components/QuestCard';
 import AchievementCard from '../components/AchievementCard';
@@ -269,7 +269,7 @@ const Profile: React.FC = () => {
         </div>
 
         {/* Content */}
-        {activeTab === 'quests' ? (
+        {activeTab === 'quests' && (
             viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
                     {filteredQuests.map(quest => (
@@ -336,7 +336,9 @@ const Profile: React.FC = () => {
                     </table>
                 </div>
             )
-        ) : (
+        )}
+
+        {activeTab === 'achievements' && (
             viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
                     {filteredAchievements.map((ach: Achievement) => (
