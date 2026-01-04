@@ -2,11 +2,11 @@
 
 > *"Happiness depends upon ourselves."* — Aristotle
 
-**EudaimonAI** is an advanced life-management system designed to guide you toward [https://en.wikipedia.org/wiki/Eudaimonia](eudaimonia)—a state of flourishing and well-being. Powered by the "System AI," this application gamifies your personal growth across **8 Dimensions of Wellness**, turning the chaos of daily life into a structured, meaningful pursuit.
+**EudaimonAI** is an RPG life-management system designed to guide you toward [https://en.wikipedia.org/wiki/Eudaimonia](eudaimonia)—a state of flourishing and well-being. Powered by the "System AI," this application gamifies your personal growth across **8 Dimensions of Wellness**, turning the chaos of daily life into a structured, meaningful pursuit.
 
 ## 🧠 The Philosophy
 
-EudaimonAI is built upon the **8 Dimensions of Wellness** framework to wellness described in the literature by [https://scholar.google.com/citations?user=7hbXhs0AAAAJ&hl=en](Margaret Swarbrick) and others. The System AI analyzes your activities and helps you maintain balance, ensuring you don't max out one stat while neglecting others.
+EudaimonAI is built upon the **8 Dimensions of Wellness** framework to wellness [described in the literature](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=7hbXhs0AAAAJ&citation_for_view=7hbXhs0AAAAJ:iH-uZ7U-co4C) by [https://scholar.google.com/citations?user=7hbXhs0AAAAJ&hl=en](Margaret Swarbrick) and others. The System AI analyzes your activities and helps you maintain balance, ensuring you don't max out one stat while neglecting others.
 
 ### The 8 Dimensions
 1.  **🧠 Intellectual:** Expanding knowledge and skills.
@@ -30,14 +30,7 @@ The thing is, all of these frameworks aim to move the user towards the same dist
 
 We chose the **8 Dimensions of Wellness** because it is suited for an RPG format. Unlike purely psychological models, it treats your "character" as an inhabitant of a physical world, not just a mind in a vacuum. It breaks wellness down into concrete, actionable domains—like **Financial** and **Environmental**—that translate perfectly into a quest log with measurable data.
 
-Whether we had chosen Ryff, PERMA, or the 8 Dimensions, the goal to move "directionally" toward Eudaimonia would have been achievable, it's just that Dr. Swarbrick's framework aligns well with an RPG type setting that demands character stats and character levelling.
-
-Additionally, the model is well cited and has been adopted in many settings (corporate, clinical).
-
-Some more info and examples:
-*   [Rutgers: Mapping Mental Health with Dr. Swarbrick](https://alcoholstudies.rutgers.edu/mapping-mental-health-dr-swarbrick-the-eight-wellness-dimensions/)
-*   [Georgia Tech: Wellbeing Roadmaps](https://wellbeingroadmaps.gatech.edu/8-dimensions-of-wellness)
-*   [UCLA Rise Center](https://risecenter.ucla.edu/file/54de9fa0-c9b3-408b-b9a3-b50b710b4067)
+Whether we had chosen Ryff, PERMA, or the 8 Dimensions, the goal to move "directionally" toward eudaimonia would have been satisfied.
 
 ## 🎮 System Mechanics
 
