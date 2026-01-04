@@ -106,9 +106,9 @@ const QuestCard: React.FC<QuestCardProps> = ({
                                 {quest.title}
                             </h3>
                             <div className="flex items-center gap-2 mt-1">
-                                <span className={`text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-black/30 ${theme.text200} border ${theme.border500} border-opacity-30`}>
-                                    {dimension}
-                                </span>
+                                <div className={`flex items-center justify-center w-6 h-6 rounded-full bg-black/30 ${theme.text200} border ${theme.border500} border-opacity-30 shadow-sm`}>
+                                    <Icon size={14} strokeWidth={2.5} />
+                                </div>
                             </div>
                         </div>
                         {!forceFace && (
