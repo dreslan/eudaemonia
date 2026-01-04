@@ -30,6 +30,7 @@ function App() {
             
             <Route element={<PublicLayout />}>
               <Route path="/public/profile/:username" element={<PublicProfile />} />
+              <Route path="/public/quests/:id" element={<QuestDetail />} />
               <Route path="/public/achievement/:id" element={<AchievementDetail />} />
             </Route>
 

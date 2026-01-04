@@ -342,6 +342,27 @@ def get_public_profile(username: str):
         "achievements": public_achievements
     }
 
+@app.get("/public/quests/{quest_id}", response_model=Quest)
+def get_public_quest(quest_id: str):
+    quest = db.get_quest_by_id(quest_id)
+    if not quest:
+        raise HTTPException(status_code=404, detail="Quest not found")
+    if quest.get('is_hidden', False):
+        raise HTTPException(status_code=404, detail="Quest not found")
+    return quest
+
+@app.get("/public/quests/{quest_id}/achievements", response_model=List[Achievement])
+def get_public_quest_achievements(quest_id: str):
+    quest = db.get_quest_by_id(quest_id)
+    if not quest or quest.get('is_hidden', False):
+        raise HTTPException(status_code=404, detail="Quest not found")
+    
+    achievements = db.get_achievements(user_id=quest['user_id'])
+    return [
+        a for a in achievements 
+        if a.get('quest_id') == quest_id and not a.get('is_hidden', False)
+    ]
+
 @app.get("/public/achievements/{achievement_id}", response_model=Achievement)
 def get_public_achievement(achievement_id: str):
     # In a real DB we would query by ID directly. Here we load all.

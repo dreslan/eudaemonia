@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import { Printer, ArrowRight, RotateCw, Eye, EyeOff } from 'lucide-react';
+import { Printer, ArrowRight, RotateCw, Eye, EyeOff, Share2 } from 'lucide-react';
 import type { Quest } from '../types';
 import { dimensionColors } from '../utils/colors';
 import { getDimensionIcon } from '../utils/dimensionIcons';
@@ -14,6 +14,7 @@ interface QuestCardProps {
     forceFace?: 'front' | 'back';
     hideActions?: boolean;
     onVisibilityChange?: (newVisibility: boolean) => void;
+    isPublicView?: boolean;
 }
 
 const QuestCard: React.FC<QuestCardProps> = ({ 
@@ -22,18 +23,25 @@ const QuestCard: React.FC<QuestCardProps> = ({
     className = '',
     forceFace,
     hideActions = false,
-    onVisibilityChange
+    onVisibilityChange,
+    isPublicView = false
 }) => {
     const [isFlipped, setIsFlipped] = useState(false);
     const [isHidden, setIsHidden] = useState(quest.is_hidden || false);
     const dimension = quest.dimension || 'default';
     const theme = dimensionColors[dimension] || dimensionColors.default;
-    const questUrl = `${window.location.origin}/quests/${quest.id}`;
+    const questUrl = `${window.location.origin}/public/quests/${quest.id}`;
     const Icon = getDimensionIcon(dimension);
 
     const handlePrint = (e: React.MouseEvent) => {
         e.stopPropagation();
         window.open(`/print/quests/${quest.id}`, '_blank');
+    };
+
+    const handleShare = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(questUrl);
+        alert("Public link copied to clipboard!");
     };
 
     const handleFlip = (e: React.MouseEvent) => {
@@ -176,13 +184,24 @@ const QuestCard: React.FC<QuestCardProps> = ({
                     <div className="flex gap-3 print:hidden">
                         {!hideActions && (
                             <>
-                                <button 
-                                    onClick={toggleVisibility}
-                                    className={`${isHidden ? 'text-gray-600' : 'text-gray-400'} hover:text-white transition-colors`}
-                                    title={isHidden ? "Make Public" : "Hide from Public"}
-                                >
-                                    {isHidden ? <EyeOff size={18} /> : <Eye size={18} />}
-                                </button>
+                                {!isPublicView && (
+                                    <>
+                                        <button 
+                                            onClick={handleShare}
+                                            className="text-gray-400 hover:text-white transition-colors"
+                                            title="Share Public Link"
+                                        >
+                                            <Share2 size={18} />
+                                        </button>
+                                        <button 
+                                            onClick={toggleVisibility}
+                                            className={`${isHidden ? 'text-gray-600' : 'text-gray-400'} hover:text-white transition-colors`}
+                                            title={isHidden ? "Make Public" : "Hide from Public"}
+                                        >
+                                            {isHidden ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </>
+                                )}
                                 <button 
                                     onClick={handlePrint}
                                     className="text-gray-400 hover:text-white transition-colors"
@@ -191,7 +210,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
                                     <Printer size={18} />
                                 </button>
                                 <Link 
-                                    to={`/quests/${quest.id}`}
+                                    to={isPublicView ? `/public/quests/${quest.id}` : `/quests/${quest.id}`}
                                     className={`${theme.text400} hover:${theme.text200} transition-colors`}
                                     title="View Details"
                                 >

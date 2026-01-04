@@ -41,6 +41,18 @@ class SqliteDatabase:
         finally:
             session.close()
 
+    def get_quest_by_id(self, quest_id: str) -> Optional[Dict]:
+        session = self.SessionLocal()
+        try:
+            quest = session.query(QuestDB).filter(QuestDB.id == quest_id).first()
+            if quest:
+                q_dict = self._to_dict(quest)
+                q_dict['tags'] = json.loads(q_dict['tags'])
+                return q_dict
+            return None
+        finally:
+            session.close()
+
     def add_quest(self, quest: Quest):
         session = self.SessionLocal()
         try:

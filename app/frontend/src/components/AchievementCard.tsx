@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import { Printer, ArrowRight, RotateCw, Eye, EyeOff } from 'lucide-react';
+import { Printer, ArrowRight, RotateCw, Eye, EyeOff, Share2 } from 'lucide-react';
 import type { Achievement } from '../types';
 import { dimensionColors } from '../utils/colors';
 import { getDimensionIcon } from '../utils/dimensionIcons';
@@ -15,6 +15,7 @@ interface AchievementCardProps {
     forceFace?: 'front' | 'back';
     hideActions?: boolean;
     onVisibilityChange?: (newVisibility: boolean) => void;
+    isPublicView?: boolean;
 }
 
 const AchievementCard: React.FC<AchievementCardProps> = ({ 
@@ -24,7 +25,8 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
     className = '',
     forceFace,
     hideActions = false,
-    onVisibilityChange
+    onVisibilityChange,
+    isPublicView = false
 }) => {
     const [isFlipped, setIsFlipped] = useState(false);
     const [isHidden, setIsHidden] = useState(achievement.is_hidden || false);
@@ -37,6 +39,12 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
     const handlePrint = (e: React.MouseEvent) => {
         e.stopPropagation();
         window.open(`/print/achievements/${achievement.id}`, '_blank');
+    };
+
+    const handleShare = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(shareUrl);
+        alert("Public link copied to clipboard!");
     };
 
     const handleFlip = (e: React.MouseEvent) => {
@@ -193,13 +201,24 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
                     <div className="flex gap-2 ml-2 print:hidden">
                         {!hideActions && (
                             <>
-                                <button 
-                                    onClick={toggleVisibility}
-                                    className={`${isHidden ? 'text-gray-600' : 'text-gray-400'} hover:text-white transition-colors`}
-                                    title={isHidden ? "Make Public" : "Hide from Public"}
-                                >
-                                    {isHidden ? <EyeOff size={16} /> : <Eye size={16} />}
-                                </button>
+                                {!isPublicView && (
+                                    <>
+                                        <button 
+                                            onClick={handleShare}
+                                            className="text-gray-400 hover:text-white transition-colors"
+                                            title="Share Public Link"
+                                        >
+                                            <Share2 size={16} />
+                                        </button>
+                                        <button 
+                                            onClick={toggleVisibility}
+                                            className={`${isHidden ? 'text-gray-600' : 'text-gray-400'} hover:text-white transition-colors`}
+                                            title={isHidden ? "Make Public" : "Hide from Public"}
+                                        >
+                                            {isHidden ? <EyeOff size={16} /> : <Eye size={16} />}
+                                        </button>
+                                    </>
+                                )}
                                 <button 
                                     onClick={handlePrint}
                                     className="text-gray-400 hover:text-white transition-colors"
@@ -208,7 +227,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
                                     <Printer size={16} />
                                 </button>
                                 <Link 
-                                    to={`/achievements/${achievement.id}`}
+                                    to={isPublicView ? `/public/achievement/${achievement.id}` : `/achievements/${achievement.id}`}
                                     className="text-yellow-500 hover:text-yellow-200 transition-colors"
                                     title="View Details"
                                 >

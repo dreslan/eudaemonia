@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
 import type { Achievement, Quest } from '../types';
-import { ArrowLeft, Printer, Link as LinkIcon, Save } from 'lucide-react';
+import { ArrowLeft, Printer, Link as LinkIcon, Save, Share2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import AchievementCard from '../components/AchievementCard';
 
@@ -58,6 +58,14 @@ const AchievementDetail: React.FC = () => {
     }
   };
 
+  const handleShare = () => {
+      if (achievement) {
+          const url = `${window.location.origin}/public/achievement/${achievement.id}`;
+          navigator.clipboard.writeText(url);
+          alert("Public link copied to clipboard!");
+      }
+  };
+
   const handleLinkQuest = async () => {
       if (!selectedQuestId || !achievement) return;
       
@@ -93,12 +101,22 @@ const AchievementDetail: React.FC = () => {
              </button>
           )}
           
-          <button 
-            onClick={handlePrint}
-            className="flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-500 text-black font-bold rounded transition-colors shadow-lg"
-          >
-            <Printer className="w-5 h-5 mr-2" /> Print Card
-          </button>
+          <div className="flex gap-2">
+            {!isPublic && (
+                <button 
+                    onClick={handleShare}
+                    className="flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded transition-colors shadow-lg"
+                >
+                    <Share2 className="w-5 h-5 mr-2" /> Share
+                </button>
+            )}
+            <button 
+                onClick={handlePrint}
+                className="flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-500 text-black font-bold rounded transition-colors shadow-lg"
+            >
+                <Printer className="w-5 h-5 mr-2" /> Print Card
+            </button>
+          </div>
       </div>
 
       <div className="flex flex-col xl:flex-row gap-12 items-center justify-center mt-4">
@@ -133,7 +151,7 @@ const AchievementDetail: React.FC = () => {
               <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-4 rounded-md">
                   <div>
                       <span className="text-sm text-gray-500 dark:text-gray-400 block">Linked to Quest</span>
-                      <Link to={`/quests/${linkedQuest.id}`} className="text-lg font-medium text-orange-600 dark:text-dcc-system hover:underline">
+                      <Link to={isPublic ? `/public/quests/${linkedQuest.id}` : `/quests/${linkedQuest.id}`} className="text-lg font-medium text-orange-600 dark:text-dcc-system hover:underline">
                           {linkedQuest.title}
                       </Link>
                   </div>

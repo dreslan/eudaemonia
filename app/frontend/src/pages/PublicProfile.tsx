@@ -156,7 +156,7 @@ const PublicProfile: React.FC = () => {
             viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
                     {filteredQuests.map(quest => (
-                        <QuestCard key={quest.id} quest={quest} />
+                        <QuestCard key={quest.id} quest={quest} isPublicView={true} />
                     ))}
                 </div>
             ) : (
@@ -174,9 +174,9 @@ const PublicProfile: React.FC = () => {
                             {filteredQuests.map(quest => (
                                 <tr key={quest.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className="text-orange-600 dark:text-dcc-system font-medium">
+                                        <Link to={`/public/quests/${quest.id}`} className="text-orange-600 dark:text-dcc-system font-medium hover:underline">
                                             {quest.title}
-                                        </span>
+                                        </Link>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${quest.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'}`}>

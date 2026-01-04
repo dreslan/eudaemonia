@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import type { Quest, Achievement, Status } from '../types';
-import { ArrowLeft, Edit, Trash2, Plus, LayoutGrid, List, Calendar, Play, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Plus, LayoutGrid, List, Calendar, Play, CheckCircle, Share2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import AchievementCard from '../components/AchievementCard';
 import Timeline from '../components/Timeline';
@@ -15,32 +15,46 @@ const QuestDetail: React.FC = () => {
   const [quest, setQuest] = useState<Quest | null>(null);
   const [linkedAchievements, setLinkedAchievements] = useState<Achievement[]>([]);
   const [viewMode, setViewMode] = useState<'timeline' | 'grid' | 'table'>('timeline');
+  const isPublic = window.location.pathname.startsWith('/public');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const questRes = await axios.get(`http://localhost:8000/quests/${id}`);
-        setQuest(questRes.data);
+        let questData;
+        let linked = [];
+
+        if (isPublic) {
+            const questRes = await axios.get(`http://localhost:8000/public/quests/${id}`);
+            questData = questRes.data;
+            
+            const achievementsRes = await axios.get(`http://localhost:8000/public/quests/${id}/achievements`);
+            linked = achievementsRes.data;
+        } else {
+            const questRes = await axios.get(`http://localhost:8000/quests/${id}`);
+            questData = questRes.data;
+            
+            const achievementsRes = await axios.get('http://localhost:8000/achievements');
+            linked = achievementsRes.data.filter((a: Achievement) => a.quest_id === id);
+        }
         
-        const achievementsRes = await axios.get('http://localhost:8000/achievements');
+        setQuest(questData);
         
         // Sort: Date Ascending, then Creation Order (Index) Ascending
-        const linked = achievementsRes.data
+        const sortedLinked = linked
           .map((a: Achievement, index: number) => ({ ...a, _originalIndex: index }))
-          .filter((a: Achievement & { _originalIndex: number }) => a.quest_id === id)
           .sort((a: Achievement & { _originalIndex: number }, b: Achievement & { _originalIndex: number }) => {
               const dateDiff = new Date(a.date_completed).getTime() - new Date(b.date_completed).getTime();
               if (dateDiff !== 0) return dateDiff;
               return a._originalIndex - b._originalIndex;
           });
           
-        setLinkedAchievements(linked);
+        setLinkedAchievements(sortedLinked);
       } catch (error) {
         console.error("Error fetching quest details", error);
       }
     };
     fetchData();
-  }, [id]);
+  }, [id, isPublic]);
 
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this quest? This cannot be undone.")) {
@@ -76,56 +90,80 @@ const QuestDetail: React.FC = () => {
       }
   };
 
+  const handleShare = () => {
+      const url = `${window.location.origin}/public/quests/${id}`;
+      navigator.clipboard.writeText(url);
+      alert("Public link copied to clipboard!");
+  };
+
   if (!quest) return <div>Loading...</div>;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8 pb-12">
       {/* Header Navigation */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-        <Link to="/" className="inline-flex items-center text-orange-600 hover:text-orange-800 dark:text-dcc-system dark:hover:text-white">
-            <ArrowLeft className="w-4 h-4 mr-1" /> Back to Dashboard
-        </Link>
-        <div className="flex flex-wrap gap-2">
-            {/* Status Actions */}
-            {quest.status === 'backlog' && (
-                <button
-                    onClick={() => handleStatusChange('active')}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:bg-green-700 dark:hover:bg-green-600"
-                >
-                    <Play className="w-4 h-4 mr-2" />
-                    Start Quest
-                </button>
-            )}
-            
-            {quest.status === 'active' && (
-                <button
-                    onClick={() => handleStatusChange('completed')}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-dcc-system hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 dark:hover:bg-orange-400"
-                >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Complete Quest
-                </button>
-            )}
-
-            {quest.status === 'completed' && (
-                <span className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 cursor-default">
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Completed
-                </span>
-            )}
-
-            <Link
-                to={`/quests/${id}/edit`}
-                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 dark:bg-dcc-card dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700"
-            >
-                <Edit className="w-4 h-4 mr-1" /> Edit
+        {!isPublic ? (
+            <Link to="/" className="inline-flex items-center text-orange-600 hover:text-orange-800 dark:text-dcc-system dark:hover:text-white">
+                <ArrowLeft className="w-4 h-4 mr-1" /> Back to Dashboard
             </Link>
-            <button
-                onClick={handleDelete}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-dcc-danger dark:hover:bg-red-600"
-            >
-                <Trash2 className="w-4 h-4 mr-1" /> Delete
-            </button>
+        ) : (
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+                Public Quest View
+            </div>
+        )}
+        
+        <div className="flex flex-wrap gap-2">
+            {!isPublic && (
+                <>
+                    <button
+                        onClick={handleShare}
+                        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 dark:bg-dcc-card dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700"
+                    >
+                        <Share2 className="w-4 h-4 mr-1" /> Share
+                    </button>
+
+                    {/* Status Actions */}
+                    {quest.status === 'backlog' && (
+                        <button
+                            onClick={() => handleStatusChange('active')}
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:bg-green-700 dark:hover:bg-green-600"
+                        >
+                            <Play className="w-4 h-4 mr-2" />
+                            Start Quest
+                        </button>
+                    )}
+                    
+                    {quest.status === 'active' && (
+                        <button
+                            onClick={() => handleStatusChange('completed')}
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-dcc-system hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 dark:hover:bg-orange-400"
+                        >
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Complete Quest
+                        </button>
+                    )}
+
+                    {quest.status === 'completed' && (
+                        <span className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 cursor-default">
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Completed
+                        </span>
+                    )}
+
+                    <Link
+                        to={`/quests/${id}/edit`}
+                        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 dark:bg-dcc-card dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700"
+                    >
+                        <Edit className="w-4 h-4 mr-1" /> Edit
+                    </Link>
+                    <button
+                        onClick={handleDelete}
+                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-dcc-danger dark:hover:bg-red-600"
+                    >
+                        <Trash2 className="w-4 h-4 mr-1" /> Delete
+                    </button>
+                </>
+            )}
         </div>
       </div>
 
@@ -182,6 +220,7 @@ const QuestDetail: React.FC = () => {
                       </button>
                   </div>
 
+                  {!isPublic && (
                   <Link 
                       to={`/achievements/new?quest_id=${id}`}
                       className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-dcc-system hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 dark:hover:bg-orange-400"
@@ -189,6 +228,7 @@ const QuestDetail: React.FC = () => {
                       <Plus className="w-4 h-4 mr-2" />
                       Log Progress
                   </Link>
+                  )}
               </div>
           </div>
 
