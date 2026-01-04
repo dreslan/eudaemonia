@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import type { Achievement, Quest } from '../types';
-import { LayoutGrid, List, Search, Eye, EyeOff, Skull, Edit2, Check, Printer, Download, Shield } from 'lucide-react';
+import { LayoutGrid, List, Search, Eye, EyeOff, Skull, Edit2, Check, Printer, Download, Shield, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import QuestCard from '../components/QuestCard';
 import AchievementCard from '../components/AchievementCard';
@@ -120,23 +120,12 @@ const Profile: React.FC = () => {
                             placeholder="Display Name"
                         />
                     </div>
-                    <div className="w-full">
-                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 text-left">OpenAI API Key (for GenAI)</label>
-                        <input 
-                            type="password" 
-                            value={apiKey} 
-                            onChange={(e) => setApiKey(e.target.value)}
-                            className="w-full border dark:border-gray-600 rounded px-2 py-1 text-gray-900 dark:text-white bg-white dark:bg-gray-900 text-sm font-mono"
-                            placeholder="sk-..."
-                        />
-                        <p className="text-[10px] text-gray-400 mt-1 text-left">Stored securely. Used only for generating achievement flavor text.</p>
-                    </div>
                     <div className="flex gap-2 mt-2 w-full justify-end">
-                        <button onClick={() => { setIsEditingProfile(false); setDisplayName(profile.display_name || profile.username); setApiKey(profile.openai_api_key || ''); }} className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 px-3 py-1 rounded text-sm">
+                        <button onClick={() => { setIsEditingProfile(false); setDisplayName(profile.display_name || profile.username); }} className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 px-3 py-1 rounded text-sm">
                             Cancel
                         </button>
                         <button onClick={handleUpdateProfile} className="text-white bg-green-600 hover:bg-green-700 px-3 py-1 rounded flex items-center gap-1 text-sm shadow-sm">
-                            <Check className="w-3 h-3" /> Save Changes
+                            <Check className="w-3 h-3" /> Save
                         </button>
                     </div>
                 </div>
@@ -437,6 +426,38 @@ const Profile: React.FC = () => {
                             </div>
                             <p className="mt-4 text-xs text-gray-500 dark:text-gray-400 font-mono break-all text-center">{newAchievementUrl}</p>
                         </div>
+                    </div>
+                </div>
+
+                <hr className="border-gray-200 dark:border-gray-700" />
+
+                {/* GenAI Settings */}
+                <div className="bg-white dark:bg-dcc-card rounded-lg">
+                    <h2 className="text-xl font-bold mb-4 dark:text-dcc-system flex items-center gap-2">
+                        <Sparkles className="w-5 h-5" /> GenAI Settings
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">Configure your OpenAI API key to enable AI-generated flavor text for achievements.</p>
+                    
+                    <div className="max-w-xl">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">OpenAI API Key</label>
+                        <div className="flex gap-2">
+                            <input 
+                                type="password" 
+                                value={apiKey} 
+                                onChange={(e) => setApiKey(e.target.value)}
+                                className="flex-1 border dark:border-gray-600 rounded px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-900 text-sm font-mono"
+                                placeholder="sk-..."
+                            />
+                            <button 
+                                onClick={handleUpdateProfile}
+                                className="px-4 py-2 bg-dcc-system text-white rounded hover:bg-orange-700 dark:hover:bg-orange-400 text-sm font-medium shadow-sm"
+                            >
+                                Save Key
+                            </button>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            Your key is stored securely in your local database and is only used for generating descriptions.
+                        </p>
                     </div>
                 </div>
 
