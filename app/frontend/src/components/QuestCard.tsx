@@ -94,7 +94,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
 
         // Default to Front (or 3D wrapper if no forceFace)
         const FrontContent = (
-            <div className={`absolute inset-0 backface-hidden rounded-2xl overflow-hidden bg-gray-900 text-white flex flex-col border-[12px] ${theme.border900} shadow-2xl ${forceFace ? 'relative w-full h-full' : ''}`}>
+            <div className={`w-full h-full rounded-2xl overflow-hidden bg-gray-900 text-white flex flex-col border-[12px] ${theme.border900} shadow-2xl relative`}>
                 {/* Inner Border */}
                 <div className={`absolute inset-0 border-[2px] ${theme.border400} opacity-50 rounded-lg pointer-events-none z-20`}></div>
                 
@@ -182,11 +182,14 @@ const QuestCard: React.FC<QuestCardProps> = ({
         if (forceFace === 'front') return FrontContent;
 
         return (
-            <div className={`relative w-full h-full transition-transform duration-700 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
-                {FrontContent}
+            <div className={`relative w-full h-full transition-transform duration-700 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`} style={{ transformStyle: 'preserve-3d' }}>
+                {/* Front Face */}
+                <div className="absolute inset-0 backface-hidden" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(0deg) translateZ(1px)' }}>
+                    {FrontContent}
+                </div>
                 
-                {/* BACK (3D Mode) */}
-                <div className="absolute inset-0 backface-hidden rotate-y-180">
+                {/* Back Face */}
+                <div className="absolute inset-0 backface-hidden" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg) translateZ(1px)' }}>
                     {BackContent}
                 </div>
             </div>
