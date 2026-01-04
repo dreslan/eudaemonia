@@ -8,6 +8,7 @@ const NewQuest: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const isEditMode = Boolean(id);
 
+  const [hasDueDate, setHasDueDate] = useState(false);
   const [formData, setFormData] = useState<QuestCreate>({
     title: '',
     dimension: null,
@@ -46,6 +47,9 @@ const NewQuest: React.FC = () => {
             try {
                 const res = await axios.get(`http://localhost:8000/quests/${id}`);
                 setFormData(res.data);
+                if (res.data.due_date) {
+                    setHasDueDate(true);
+                }
             } catch (error) {
                 console.error("Error fetching quest for edit", error);
             }
@@ -53,6 +57,14 @@ const NewQuest: React.FC = () => {
         fetchQuest();
     }
   }, [isEditMode, id]);
+
+  const handleDueDateToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const checked = e.target.checked;
+      setHasDueDate(checked);
+      if (!checked) {
+          setFormData(prev => ({ ...prev, due_date: undefined }));
+      }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -133,17 +145,35 @@ const NewQuest: React.FC = () => {
                 </div>
             )}
             <div className={isEditMode ? "" : "col-span-2"}>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Due Date</label>
-                <input
-                    type="datetime-local"
-                    name="due_date"
-                    value={formData.due_date ? new Date(formData.due_date).toISOString().slice(0, 16) : ''}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-2 border dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {formData.due_date ? '' : 'Default: Heat death of the universe'}
-                </p>
+                <div className="flex items-center justify-between mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Due Date</label>
+                    <div className="flex items-center">
+                        <input
+                            id="has_due_date"
+                            type="checkbox"
+                            checked={hasDueDate}
+                            onChange={handleDueDateToggle}
+                            className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                        />
+                        <label htmlFor="has_due_date" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
+                            Set deadline?
+                        </label>
+                    </div>
+                </div>
+                
+                {hasDueDate ? (
+                    <input
+                        type="date"
+                        name="due_date"
+                        value={formData.due_date ? formData.due_date.split('T')[0] : ''}
+                        onChange={handleChange}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-2 border dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                    />
+                ) : (
+                    <div className="mt-1 block w-full rounded-md border-gray-200 bg-gray-50 dark:bg-gray-800/50 dark:border-gray-700 p-2 text-sm text-gray-400 italic border">
+                        No deadline set (Heat death of the universe)
+                    </div>
+                )}
             </div>
         </div>
 
