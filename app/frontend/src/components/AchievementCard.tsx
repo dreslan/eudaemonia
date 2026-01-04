@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { Printer, ExternalLink } from 'lucide-react';
@@ -23,6 +23,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
     forceFace,
     hideActions = false
 }) => {
+    const [imgError, setImgError] = useState(false);
     const dimension = achievement.dimension || 'default';
     const theme = dimensionColors[dimension] || dimensionColors.default;
     const shareUrl = `${window.location.origin}/public/achievement/${achievement.id}`;
@@ -102,11 +103,12 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
 
                 {/* Art Area */}
                 <div className="relative h-40 bg-black border-b-4 border-yellow-600 overflow-hidden flex items-center justify-center">
-                    {achievement.image_url ? (
+                    {achievement.image_url && !imgError ? (
                         <img 
                             src={achievement.image_url} 
                             alt={achievement.title}
                             className="w-full h-full object-cover opacity-90"
+                            onError={() => setImgError(true)}
                         />
                     ) : (
                         <div className="absolute inset-0 flex items-center justify-center opacity-20 select-none">
