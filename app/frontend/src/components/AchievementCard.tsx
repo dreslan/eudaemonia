@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import { Printer, ExternalLink, RotateCw } from 'lucide-react';
+import { Printer, ArrowRight, RotateCw } from 'lucide-react';
 import type { Achievement } from '../types';
 import { dimensionColors } from '../utils/colors';
 import { getDimensionIcon } from '../utils/dimensionIcons';
@@ -187,7 +187,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
                                     className="text-yellow-500 hover:text-yellow-200 transition-colors"
                                     title="View Details"
                                 >
-                                    <ExternalLink size={16} />
+                                    <ArrowRight size={18} />
                                 </Link>
                             </>
                         )}
