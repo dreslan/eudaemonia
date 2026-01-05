@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import type { Achievement, Quest, User, Status } from '../types';
-import { LayoutGrid, List, Search, Skull, Edit2, Check, Share2, ExternalLink, X, Printer, Circle, Archive, History, Trophy, Copy } from 'lucide-react';
+import { LayoutGrid, List, Search, Skull, Edit2, Check, Share2, ExternalLink, X, Circle, Archive, History, Trophy, Copy } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import QuestCard from '../components/QuestCard';
 import AchievementCard from '../components/AchievementCard';
@@ -138,17 +138,14 @@ const Profile: React.FC = () => {
     <div className="space-y-6">
       {/* Character Card Showcase */}
       <div className="flex justify-center mb-8">
-          <div className="relative group">
-            <CharacterCard user={profile} />
-            <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                <button 
-                    onClick={() => window.open(`/print/character`, '_blank')}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-full shadow-lg hover:bg-gray-800 transition-colors"
-                >
-                    <Printer size={16} />
-                    <span>Print Card</span>
-                </button>
-            </div>
+          <div className="flex flex-col items-center">
+            <CharacterCard user={profile} achievements={achievements} />
+            <CardActionBar 
+                type="character"
+                id={profile.username}
+                showStatusActions={false}
+                showDelete={false}
+            />
           </div>
       </div>
 
@@ -196,7 +193,7 @@ const Profile: React.FC = () => {
                                 </button>
                             </div>
                         )}
-                        <p className="text-orange-600 dark:text-dcc-system font-mono font-medium">Level {profile.level || 1} Crawler</p>
+                        <p className="text-orange-600 dark:text-dcc-system font-mono font-medium">Level {profile.level || 1} Player</p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">@{profile.username}</p>
                     </div>
 
@@ -206,7 +203,7 @@ const Profile: React.FC = () => {
                             className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
                         >
                             <Share2 className="w-4 h-4" />
-                            Share Character
+                            Share Player
                         </button>
                         <a 
                             href={publicProfileUrl} 
@@ -221,7 +218,7 @@ const Profile: React.FC = () => {
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t dark:border-gray-700/50">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-4 border-t dark:border-gray-700/50">
                     <div className="text-center md:text-left">
                         <div className="text-2xl font-bold text-gray-900 dark:text-white">{profile.stats?.quests_active || 0}</div>
                         <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">Active Quests</div>
@@ -234,7 +231,59 @@ const Profile: React.FC = () => {
                         <div className="text-2xl font-bold text-gray-900 dark:text-white">{profile.stats?.achievements_unlocked || 0}</div>
                         <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">Achievements</div>
                     </div>
+                    <div className="text-center md:text-left">
+                        <div className="text-2xl font-bold text-orange-600 dark:text-dcc-system">{profile.stats?.total_xp || 0}</div>
+                        <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">Total XP</div>
+                    </div>
                 </div>
+
+                {/* Status Effects (Mocked) */}
+                <div className="mt-6 pt-4 border-t dark:border-gray-700/50">
+                    <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Status Effects</h3>
+                    <div className="flex flex-wrap gap-3">
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded px-3 py-2 flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                            <div>
+                                <div className="text-xs font-bold text-blue-700 dark:text-blue-300">Momentum x5</div>
+                                <div className="text-[10px] text-blue-600 dark:text-blue-400">+10% XP Gain</div>
+                            </div>
+                        </div>
+                        <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded px-3 py-2 flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                            <div>
+                                <div className="text-xs font-bold text-purple-700 dark:text-purple-300">Well Rested</div>
+                                <div className="text-[10px] text-purple-600 dark:text-purple-400">Ready for Quests</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Quest Breakdown */}
+                {profile.stats?.quest_difficulty_breakdown && (
+                    <div className="mt-6 pt-4 border-t dark:border-gray-700/50">
+                        <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Quest Mastery</h3>
+                        <div className="flex flex-wrap gap-2">
+                            {[1, 2, 3, 4, 5].map(diff => {
+                                const count = profile.stats?.quest_difficulty_breakdown?.[diff] || 0;
+                                if (count === 0) return null;
+                                
+                                let label = "Common";
+                                let color = "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+                                if (diff === 2) { label = "Uncommon"; color = "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"; }
+                                if (diff === 3) { label = "Rare"; color = "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"; }
+                                if (diff === 4) { label = "Epic"; color = "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"; }
+                                if (diff === 5) { label = "Legendary"; color = "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"; }
+
+                                return (
+                                    <div key={diff} className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 ${color}`}>
+                                        <span>{label}</span>
+                                        <span className="bg-white/20 px-1.5 rounded-full">{count}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
 
                 {/* Dimension Stats */}
                 {profile.dimension_stats && profile.dimension_stats.length > 0 && (
@@ -499,7 +548,7 @@ const Profile: React.FC = () => {
                 </button>
                 
                 <div className="text-center space-y-4">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">Share Character</h3>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">Share Player</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                         Scan this code to view {profile.display_name || profile.username}'s public profile.
                     </p>

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import type { Status } from '../types';
 
 interface CardActionBarProps {
-    type: 'quest' | 'achievement';
+    type: 'quest' | 'achievement' | 'character';
     id: string;
     status?: Status; // Only for quests
     isHidden?: boolean;
@@ -29,7 +29,9 @@ const CardActionBar: React.FC<CardActionBarProps> = ({
     isPublicView = false
 }) => {
     const baseUrl = window.location.origin;
-    const shareUrl = `${baseUrl}/public/${type}s/${id}`;
+    const shareUrl = type === 'character' 
+        ? `${baseUrl}/public/profile/${id}` // Assuming id is username for character
+        : `${baseUrl}/public/${type}s/${id}`;
 
     const handleShare = () => {
         navigator.clipboard.writeText(shareUrl);
@@ -37,7 +39,8 @@ const CardActionBar: React.FC<CardActionBarProps> = ({
     };
 
     const handlePrint = () => {
-        window.open(`/print/${type}s/${id}`, '_blank');
+        const printPath = type === 'character' ? '/print/character' : `/print/${type}s/${id}`;
+        window.open(printPath, '_blank');
     };
 
     if (isPublicView) {
@@ -50,13 +53,15 @@ const CardActionBar: React.FC<CardActionBarProps> = ({
                 >
                     <Printer className="w-4 h-4" />
                 </button>
-                <Link
-                    to={`/public/${type}s/${id}`}
-                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-full transition-colors"
-                    title="View Details"
-                >
-                    <ArrowRight className="w-4 h-4" />
-                </Link>
+                {type !== 'character' && (
+                    <Link
+                        to={`/public/${type}s/${id}`}
+                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-full transition-colors"
+                        title="View Details"
+                    >
+                        <ArrowRight className="w-4 h-4" />
+                    </Link>
+                )}
             </div>
         );
     }
@@ -100,17 +105,19 @@ const CardActionBar: React.FC<CardActionBarProps> = ({
 
             {/* Right Side: Utility Actions */}
             <div className="flex items-center gap-1">
-                <button
-                    onClick={() => onVisibilityChange?.(!isHidden)}
-                    className={`p-2 rounded-full transition-colors ${
-                        isHidden 
-                        ? 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300' 
-                        : 'text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30'
-                    }`}
-                    title={isHidden ? "Hidden from public" : "Visible to public"}
-                >
-                    {isHidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+                {type !== 'character' && (
+                    <button
+                        onClick={() => onVisibilityChange?.(!isHidden)}
+                        className={`p-2 rounded-full transition-colors ${
+                            isHidden 
+                            ? 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300' 
+                            : 'text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30'
+                        }`}
+                        title={isHidden ? "Hidden from public" : "Visible to public"}
+                    >
+                        {isHidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                )}
 
                 <button
                     onClick={handleShare}
@@ -128,13 +135,15 @@ const CardActionBar: React.FC<CardActionBarProps> = ({
                     <Printer className="w-4 h-4" />
                 </button>
 
-                <Link
-                    to={`/${type}s/${id}`}
-                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-full transition-colors"
-                    title="View Details"
-                >
-                    <ArrowRight className="w-4 h-4" />
-                </Link>
+                {type !== 'character' && (
+                    <Link
+                        to={`/${type}s/${id}`}
+                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-full transition-colors"
+                        title="View Details"
+                    >
+                        <ArrowRight className="w-4 h-4" />
+                    </Link>
+                )}
                 
                 {showDelete && onDelete && (
                     <button

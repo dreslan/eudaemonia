@@ -28,6 +28,7 @@ function App() {
             
             <Route path="/print/quests/:id" element={<ProtectedRoute><PrintView /></ProtectedRoute>} />
             <Route path="/print/achievements/:id" element={<ProtectedRoute><PrintView /></ProtectedRoute>} />
+            <Route path="/print/character" element={<ProtectedRoute><PrintView /></ProtectedRoute>} />
             
             <Route element={<PublicLayout />}>
               <Route path="/public/profile/:username" element={<PublicProfile />} />

@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
-import type { User, Dimension } from '../types';
+import type { User, Dimension, Achievement } from '../types';
 import { dimensionColors } from '../utils/colors';
 import { getDimensionIcon } from '../utils/dimensionIcons';
+import { QRCodeSVG } from 'qrcode.react';
+import { getPlayerClass } from '../utils/playerClass';
 
 interface CharacterCardProps {
     user: User;
+    achievements?: Achievement[];
     className?: string;
     forceFace?: 'front' | 'back';
 }
 
 const CharacterCard: React.FC<CharacterCardProps> = ({ 
     user, 
+    achievements = [],
     className = '',
     forceFace
 }) => {
@@ -19,6 +23,8 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
     // Calculate Character Level (min of all dimension levels, or just user.level)
     // For now, use user.level or 1
     const level = user.level || 1;
+    const { className: playerClass, description: classDescription } = getPlayerClass(user);
+    const publicProfileUrl = `${window.location.origin}/public/profile/${user.username}`;
     
     const handleFlip = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -53,12 +59,12 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
         >
             {/* Header */}
             <div className="bg-gray-800 p-4 border-b-4 border-gray-700 text-center">
-                <h3 className="font-['Cinzel'] font-black text-xl text-gray-300 tracking-widest">STATS</h3>
+                <h3 className="font-['Cinzel'] font-black text-xl text-gray-300 tracking-widest">BUILD</h3>
             </div>
 
             {/* Body - Radar Chart */}
-            <div className="flex-1 flex flex-col items-center justify-center p-4 relative">
-                <div className="w-48 h-48 relative">
+            <div className="flex-1 flex flex-col items-center justify-start p-4 relative space-y-4">
+                <div className="w-40 h-40 relative mt-2">
                     <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
                         {/* Background Grid */}
                         {[0.2, 0.4, 0.6, 0.8, 1].map(scale => (
@@ -117,23 +123,42 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
                         );
                     })}
                 </div>
+
+                {/* Top Feats */}
+                <div className="w-full space-y-2">
+                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-b border-gray-700 pb-1">Top Feats</h4>
+                    {achievements.length > 0 ? (
+                        <div className="space-y-1">
+                            {achievements.slice(0, 3).map((ach, i) => (
+                                <div key={i} className="text-xs text-gray-300 truncate flex items-center gap-1">
+                                    <span className="text-orange-500">★</span> {ach.title}
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-xs text-gray-600 text-center italic">No feats recorded yet.</div>
+                    )}
+                </div>
             </div>
             
             {/* Footer */}
             <div className="bg-gray-800 p-3 border-t-4 border-gray-700 text-center">
-                <div className="grid grid-cols-2 gap-2 text-[10px] text-gray-400">
-                    {stats.slice(0, 4).map(s => (
-                        <div key={s.dimension} className="flex justify-between">
-                            <span className="uppercase">{s.dimension.slice(0,3)}</span>
-                            <span className="text-white">Lvl {s.level}</span>
-                        </div>
-                    ))}
+                <div className="text-[10px] text-gray-400 italic">
+                    "{classDescription}"
                 </div>
             </div>
         </div>
     );
 
-    if (forceFace === 'back') return BackContent;
+    if (forceFace === 'back') {
+        return (
+            <div className={`perspective-1000 w-[320px] h-[480px] ${className}`}>
+                <div className="relative w-full h-full">
+                    {BackContent}
+                </div>
+            </div>
+        );
+    }
 
     const FrontContent = (
         <div 
@@ -143,27 +168,34 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
             {/* Header */}
             <div className="bg-gradient-to-b from-orange-800 to-orange-900 p-4 border-b-4 border-orange-700 relative z-10 text-center">
                 <h3 className="font-['Cinzel'] font-bold text-2xl text-white drop-shadow-md">
-                    CRAWLER
+                        {playerClass.toUpperCase()}
                 </h3>
             </div>
 
             {/* Body */}
             <div className="flex-1 relative bg-gray-800 p-4 flex flex-col items-center">
                 {/* Avatar Placeholder */}
-                <div className="w-32 h-32 rounded-full bg-gray-700 border-4 border-orange-500 mb-4 flex items-center justify-center overflow-hidden">
+                <div className="w-32 h-32 rounded-full bg-gray-700 border-4 border-orange-500 mb-4 flex items-center justify-center overflow-hidden relative z-10">
                     <span className="text-4xl">👤</span>
                 </div>
                 
-                <h2 className="text-xl font-bold text-orange-400 mb-1">{user.display_name || user.username}</h2>
-                <div className="text-xs text-gray-400 uppercase tracking-widest mb-4">Level {level}</div>
+                <h2 className="text-xl font-bold text-orange-400 mb-1 relative z-10">{user.display_name || user.username}</h2>
+                <div className="text-xs text-gray-400 uppercase tracking-widest mb-4 relative z-10">Level {level}</div>
                 
-                <div className="w-full bg-gray-900 rounded-full h-4 border border-gray-700 relative overflow-hidden">
+                <div className="w-full bg-gray-900 rounded-full h-4 border border-gray-700 relative overflow-hidden z-10">
                     <div 
                         className="absolute top-0 left-0 h-full bg-orange-600"
                         style={{ width: `${(level % 1) * 100}%` }} // Placeholder for progress to next level
                     ></div>
                     <div className="absolute inset-0 flex items-center justify-center text-[8px] font-bold tracking-wider text-white/80">
                         PROGRESS TO NEXT LEVEL
+                    </div>
+                </div>
+
+                {/* QR Code Overlay */}
+                <div className="absolute bottom-2 right-2 opacity-50 hover:opacity-100 transition-opacity z-0">
+                    <div className="bg-white p-1 rounded">
+                        <QRCodeSVG value={publicProfileUrl} size={40} />
                     </div>
                 </div>
             </div>
@@ -175,29 +207,37 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
                     <div className="text-lg font-bold text-white">{user.stats?.quests_completed || 0}</div>
                 </div>
                 <div className="text-center">
-                    <div className="text-xs text-gray-500 uppercase">Achiev.</div>
-                    <div className="text-lg font-bold text-white">{user.stats?.achievements_unlocked || 0}</div>
+                    <div className="text-xs text-gray-500 uppercase">Total XP</div>
+                    <div className="text-lg font-bold text-orange-500">{user.stats?.total_xp || 0}</div>
                 </div>
                 <div className="text-center">
-                    <div className="text-xs text-gray-500 uppercase">Active</div>
-                    <div className="text-lg font-bold text-white">{user.stats?.quests_active || 0}</div>
+                    <div className="text-xs text-gray-500 uppercase">Achiev.</div>
+                    <div className="text-lg font-bold text-white">{user.stats?.achievements_unlocked || 0}</div>
                 </div>
             </div>
         </div>
     );
 
-    if (forceFace === 'front') return FrontContent;
+    if (forceFace === 'front') {
+        return (
+            <div className={`perspective-1000 w-[320px] h-[480px] ${className}`}>
+                <div className="relative w-full h-full">
+                    {FrontContent}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={`perspective-1000 w-[320px] h-[480px] ${className}`}>
-            <div className={`relative w-full h-full transition-transform duration-700 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
+            <div className={`relative w-full h-full transition-transform duration-700 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`} style={{ transformStyle: 'preserve-3d' }}>
                 {/* Front Face */}
-                <div className="absolute w-full h-full backface-hidden">
+                <div className="absolute inset-0 backface-hidden" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(0deg) translateZ(1px)' }}>
                     {FrontContent}
                 </div>
 
                 {/* Back Face */}
-                <div className="absolute w-full h-full backface-hidden rotate-y-180" style={{ transform: 'rotateY(180deg)' }}>
+                <div className="absolute inset-0 backface-hidden" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg) translateZ(1px)' }}>
                     {BackContent}
                 </div>
             </div>

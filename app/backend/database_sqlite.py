@@ -264,6 +264,32 @@ class SqliteDatabase:
         try:
             session.query(QuestDB).filter(QuestDB.user_id == user_id).delete()
             session.query(AchievementDB).filter(AchievementDB.user_id == user_id).delete()
+            session.query(UserDimensionStatsDB).filter(UserDimensionStatsDB.user_id == user_id).delete()
+            session.commit()
+        finally:
+            session.close()
+
+    def recalculate_user_stats(self, user_id: str):
+        session = self.SessionLocal()
+        try:
+            # 1. Clear existing stats
+            session.query(UserDimensionStatsDB).filter(UserDimensionStatsDB.user_id == user_id).delete()
+            
+            # 2. Get all completed quests
+            quests = session.query(QuestDB).filter(QuestDB.user_id == user_id, QuestDB.status == 'completed').all()
+            
+            # 3. Aggregate XP
+            stats_map = {}
+            for q in quests:
+                if q.dimension:
+                    stats_map[q.dimension] = stats_map.get(q.dimension, 0) + (q.xp_reward or 10)
+            
+            # 4. Insert new stats
+            for dim, xp in stats_map.items():
+                level = 1 + (xp // 100)
+                stat_db = UserDimensionStatsDB(user_id=user_id, dimension=dim, total_xp=xp, level=level)
+                session.add(stat_db)
+            
             session.commit()
         finally:
             session.close()

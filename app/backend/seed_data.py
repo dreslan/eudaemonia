@@ -97,6 +97,33 @@ def seed():
             {"title": "Silent Retreat", "dimension": "spiritual", "difficulty": 4, "status": "active"},
         ]
 
+        # Generate massive amount of quests to level up
+        dimensions = ['intellectual', 'physical', 'financial', 'environmental', 'vocational', 'social', 'emotional', 'spiritual']
+        
+        # Ensure at least one Legendary (Rank 5) completed
+        quests_data.append({"title": "Master the Universe", "dimension": "spiritual", "difficulty": 5, "status": "completed"})
+        
+        # Ensure a few Epic (Rank 4) completed
+        quests_data.append({"title": "Write a Novel", "dimension": "intellectual", "difficulty": 4, "status": "completed"})
+        quests_data.append({"title": "Climb Everest", "dimension": "physical", "difficulty": 4, "status": "completed"})
+
+        # Generate filler quests to ensure Level > 5 in all dimensions
+        # Level 5 requires 400 XP.
+        # We will add enough Rank 1, 2, 3 quests.
+        
+        for dim in dimensions:
+            # Add 5 Rank 3 (Rare) -> 1250 XP
+            for i in range(5):
+                quests_data.append({"title": f"{dim.capitalize()} Mastery {i+1}", "dimension": dim, "difficulty": 3, "status": "completed"})
+            
+            # Add 10 Rank 2 (Uncommon) -> 500 XP
+            for i in range(10):
+                quests_data.append({"title": f"{dim.capitalize()} Practice {i+1}", "dimension": dim, "difficulty": 2, "status": "completed"})
+                
+            # Add 20 Rank 1 (Common) -> 200 XP
+            for i in range(20):
+                quests_data.append({"title": f"{dim.capitalize()} Routine {i+1}", "dimension": dim, "difficulty": 1, "status": "completed"})
+
         existing_quests = db.get_quests(user_id)
         existing_titles = [q['title'] for q in existing_quests]
 
@@ -135,6 +162,10 @@ def seed():
                     db.add_achievement(ach)
             else:
                 print(f"Skipping existing quest: {q['title']}")
+
+        # Force recalculate stats to ensure they are correct
+        print("Recalculating veteran stats...")
+        db.recalculate_user_stats(user_id)
 
     print("Seeding complete.")
 

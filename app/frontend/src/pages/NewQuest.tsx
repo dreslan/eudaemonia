@@ -29,7 +29,7 @@ const NewQuest: React.FC = () => {
 
   const dccQuotes: Record<string, string> = {
     intellectual: "Trying to grow a wrinkle on that smooth brain of yours? How ambitious. Don't hurt yourself thinking too hard.",
-    physical: "Time to sweat, Crawler. The audience loves it when you suffer. Try not to die of exhaustion.",
+    physical: "Time to sweat, Player. The audience loves it when you suffer. Try not to die of exhaustion.",
     financial: "Gathering gold? Smart. You'll need it to bribe the producers or buy a decent funeral.",
     environmental: "Cleaning up your cage? How domestic. The dungeon janitors are on strike anyway.",
     vocational: "Work, work, work. You're just a cog in the machine, but at least be a shiny cog.",

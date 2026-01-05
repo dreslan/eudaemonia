@@ -90,7 +90,7 @@ const PublicProfile: React.FC = () => {
                 
                 <div className="space-y-4 max-w-xl">
                     <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
-                        This crawler is absolutely <span className="text-red-600 dark:text-red-400 italic">useless</span>.
+                        This player is absolutely <span className="text-red-600 dark:text-red-400 italic">useless</span>.
                     </p>
                     <p className="text-base text-gray-600 dark:text-gray-400">
                         They have achieved nothing. They have completed nothing. They are a waste of server space.

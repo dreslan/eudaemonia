@@ -46,7 +46,7 @@ const PrintView: React.FC = () => {
             }
         };
         fetchData();
-    }, [id, type]);
+    }, [id, type, user]);
 
     useEffect(() => {
         if (data) {
@@ -65,7 +65,7 @@ const PrintView: React.FC = () => {
                 Preparing Print Preview...
             </div>
             <div className="print:scale-100 transform scale-125">
-                {type === 'quest' ? (
+                {type === 'quest' && (
                     <div className="flex flex-col md:flex-row print:flex-row gap-8 print:gap-4 items-center">
                         <QuestCard 
                             quest={data as Quest} 
@@ -78,7 +78,8 @@ const PrintView: React.FC = () => {
                             forceFace="back"
                         />
                     </div>
-                ) : (
+                )}
+                {type === 'achievement' && (
                     <div className="flex flex-col md:flex-row print:flex-row gap-8 print:gap-4 items-center">
                         <AchievementCard 
                             achievement={data as Achievement} 

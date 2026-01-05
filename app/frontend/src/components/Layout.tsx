@@ -22,7 +22,7 @@ const Layout: React.FC = () => {
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                 <Link to="/" className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:border-dcc-system hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
                   <User className="w-4 h-4 mr-2" />
-                  Character
+                  Player
                 </Link>
                 <Link to="/quests/new" className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:border-dcc-system hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
                   <PlusCircle className="w-4 h-4 mr-2" />

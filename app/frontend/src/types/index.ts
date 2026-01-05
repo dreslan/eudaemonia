@@ -18,6 +18,8 @@ export interface User {
         quests_active: number;
         quests_completed: number;
         achievements_unlocked: number;
+        total_xp?: number;
+        quest_difficulty_breakdown?: Record<number, number>;
     };
     dimension_stats?: UserDimensionStats[];
 }

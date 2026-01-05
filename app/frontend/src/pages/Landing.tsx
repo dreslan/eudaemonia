@@ -14,7 +14,7 @@ const Landing: React.FC = () => {
             </div>
             
             <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-wider text-dcc-system">
-                Welcome, {user?.display_name || user?.username || "Crawler"}!
+                Welcome, {user?.display_name || user?.username || "Player"}!
             </h1>
             
             <div className="space-y-4 max-w-xl">

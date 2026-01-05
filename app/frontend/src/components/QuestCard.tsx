@@ -13,7 +13,7 @@ interface QuestCardProps {
 
 const QuestCard: React.FC<QuestCardProps> = ({ 
     quest, 
-    username = 'Crawler',
+    username = 'Player',
     className = '',
     forceFace
 }) => {
@@ -96,7 +96,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
                                     <Icon size={14} strokeWidth={2.5} />
                                 </div>
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-white/80 bg-black/20 px-1.5 py-0.5 rounded border border-white/10">
-                                    Rank {quest.difficulty || 1} • {quest.xp_reward || 10} XP
+                                    {['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'][(quest.difficulty || 1) - 1]} • {quest.xp_reward || 10} XP
                                 </span>
                             </div>
                         </div>

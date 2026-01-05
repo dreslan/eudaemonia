@@ -145,7 +145,7 @@ def update_quest(quest_id: str, update_data: QuestUpdate, current_user: UserInDB
                 if not new_ach.image_url:
                     new_ach.image_url = "https://source.unsplash.com/random/300x400?fantasy,start"
                 
-                new_ach.ai_description = f"The Crawler has accepted the quest '{current_quest.title}'. Let's see how long they last."
+                new_ach.ai_description = f"The Player has accepted the quest '{current_quest.title}'. Let's see how long they last."
                 new_ach.ai_reward = "The reward of participation."
                     
                 db.add_achievement(new_ach)
@@ -185,7 +185,7 @@ def update_quest(quest_id: str, update_data: QuestUpdate, current_user: UserInDB
         if not new_ach.image_url:
             new_ach.image_url = "https://source.unsplash.com/random/300x400?fantasy,card"
         
-        dcc_intros = ["NEW ACHIEVEMENT!", "CONGRATULATIONS, CRAWLER!", "OH LOOK, YOU DID SOMETHING."]
+        dcc_intros = ["NEW ACHIEVEMENT!", "CONGRATULATIONS, PLAYER!", "OH LOOK, YOU DID SOMETHING."]
         dcc_insults = ["I suppose that's adequate.", "Don't let it go to your head.", "My grandmother could do that."]
         dcc_rewards = ["A Silver Loot Box (Empty).", "+500 XP.", "A pat on the back."]
 
@@ -248,7 +248,7 @@ def create_achievement(achievement: AchievementCreate, current_user: UserInDB = 
             client = OpenAI(api_key=current_user.openai_api_key)
             
             prompt = f"""
-            You are the AI from Dungeon Crawler Carl. You are sarcastic, condescending, but occasionally begrudgingly impressed.
+            You are a sarcastic, condescending AI Game Master. You are occasionally begrudgingly impressed.
             The user has just completed an achievement: "{achievement.title}".
             Context: "{achievement.context}".
             Dimension: "{achievement.dimension}".
@@ -278,7 +278,7 @@ def create_achievement(achievement: AchievementCreate, current_user: UserInDB = 
     # DCC AI Voice Mocking (Fallback)
     dcc_intros = [
         "NEW ACHIEVEMENT!",
-        "CONGRATULATIONS, CRAWLER!",
+        "CONGRATULATIONS, PLAYER!",
         "OH LOOK, YOU DID SOMETHING."
     ]
     
@@ -350,6 +350,15 @@ def get_profile(current_user: UserInDB = Depends(get_current_user)):
         if len(unique_dims) >= 8:
              character_level = min(s.level for s in current_user.dimension_stats)
     
+    # Calculate Total XP
+    total_xp = sum(s.total_xp for s in current_user.dimension_stats) if current_user.dimension_stats else 0
+    
+    # Calculate Difficulty Breakdown
+    difficulty_breakdown = {}
+    for q in completed_quests:
+        diff = q.get('difficulty', 1)
+        difficulty_breakdown[diff] = difficulty_breakdown.get(diff, 0) + 1
+
     return {
         "id": current_user.id,
         "username": current_user.username,
@@ -359,7 +368,9 @@ def get_profile(current_user: UserInDB = Depends(get_current_user)):
         "stats": {
             "quests_active": len([q for q in quests if q['status'] == 'active']),
             "quests_completed": len(completed_quests),
-            "achievements_unlocked": len(achievements)
+            "achievements_unlocked": len(achievements),
+            "total_xp": total_xp,
+            "quest_difficulty_breakdown": difficulty_breakdown
         },
         "dimension_stats": current_user.dimension_stats,
         "recent_achievements": achievements[-5:]
