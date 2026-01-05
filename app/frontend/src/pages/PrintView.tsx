@@ -3,21 +3,32 @@ import { useParams, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import QuestCard from '../components/QuestCard';
 import AchievementCard from '../components/AchievementCard';
+import CharacterCard from '../components/CharacterCard';
 import { useAuth } from '../context/AuthContext';
-import type { Quest, Achievement } from '../types';
+import type { Quest, Achievement, User } from '../types';
 
 const PrintView: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const location = useLocation();
     const { user } = useAuth();
-    const type = location.pathname.includes('quests') ? 'quest' : 'achievement';
     
-    const [data, setData] = useState<Quest | Achievement | null>(null);
+    let type = 'quest';
+    if (location.pathname.includes('achievements')) type = 'achievement';
+    if (location.pathname.includes('character')) type = 'character';
+    
+    const [data, setData] = useState<Quest | Achievement | User | null>(null);
     const [linkedQuest, setLinkedQuest] = useState<Quest | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
+                if (type === 'character') {
+                    // For now, just use the logged-in user. 
+                    // In a real app, we might fetch by ID if public profiles exist.
+                    if (user) setData(user);
+                    return;
+                }
+
                 const endpoint = type === 'quest' ? 'quests' : 'achievements';
                 const res = await axios.get(`http://localhost:8000/${endpoint}/${id}`);
                 setData(res.data);
@@ -79,6 +90,18 @@ const PrintView: React.FC = () => {
                             achievement={data as Achievement} 
                             username={user?.display_name || user?.username}
                             questTitle={linkedQuest?.title}
+                            forceFace="back"
+                        />
+                    </div>
+                )}
+                {type === 'character' && (
+                    <div className="flex flex-col md:flex-row print:flex-row gap-8 print:gap-4 items-center">
+                        <CharacterCard 
+                            user={data as User} 
+                            forceFace="front"
+                        />
+                        <CharacterCard 
+                            user={data as User} 
                             forceFace="back"
                         />
                     </div>

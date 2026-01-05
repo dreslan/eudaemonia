@@ -6,7 +6,6 @@ import Layout from './components/Layout';
 import PublicLayout from './components/PublicLayout';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
 import NewQuest from './pages/NewQuest';
 import NewAchievement from './pages/NewAchievement';
 import Profile from './pages/Profile';
@@ -37,13 +36,12 @@ function App() {
             </Route>
 
             <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-              <Route index element={<Dashboard />} />
+              <Route index element={<Profile />} />
               <Route path="quests/new" element={<NewQuest />} />
               <Route path="quests/:id" element={<QuestDetail />} />
               <Route path="quests/:id/edit" element={<NewQuest />} />
               <Route path="achievements/new" element={<NewAchievement />} />
               <Route path="achievements/:id" element={<AchievementDetail />} />
-              <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Settings />} />
               <Route path="tools" element={<Tools />} />
             </Route>

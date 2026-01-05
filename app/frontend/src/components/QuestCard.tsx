@@ -95,6 +95,9 @@ const QuestCard: React.FC<QuestCardProps> = ({
                                 <div className={`flex items-center justify-center w-6 h-6 rounded-full bg-black/30 ${theme.text200} border ${theme.border500} border-opacity-30 shadow-sm`}>
                                     <Icon size={14} strokeWidth={2.5} />
                                 </div>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-white/80 bg-black/20 px-1.5 py-0.5 rounded border border-white/10">
+                                    Rank {quest.difficulty || 1} • {quest.xp_reward || 10} XP
+                                </span>
                             </div>
                         </div>
                     </div>

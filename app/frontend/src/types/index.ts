@@ -1,6 +1,12 @@
 export type Dimension = 'intellectual' | 'physical' | 'financial' | 'environmental' | 'vocational' | 'social' | 'emotional' | 'spiritual';
 export type Status = 'active' | 'backlog' | 'completed';
 
+export interface UserDimensionStats {
+    dimension: Dimension;
+    total_xp: number;
+    level: number;
+}
+
 export interface User {
     id: string;
     username: string;
@@ -13,6 +19,7 @@ export interface User {
         quests_completed: number;
         achievements_unlocked: number;
     };
+    dimension_stats?: UserDimensionStats[];
 }
 
 export interface Quest {
@@ -27,6 +34,8 @@ export interface Quest {
     victory_condition?: string;
     is_hidden?: boolean;
     due_date?: string;
+    difficulty?: number;
+    xp_reward?: number;
 }
 
 export interface QuestCreate {
@@ -36,6 +45,8 @@ export interface QuestCreate {
     tags?: string[];
     victory_condition?: string;
     due_date?: string;
+    difficulty?: number;
+    xp_reward?: number;
 }
 
 export interface Achievement {

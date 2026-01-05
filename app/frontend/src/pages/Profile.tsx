@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import type { Achievement, Quest, User } from '../types';
-import { LayoutGrid, List, Search, Eye, EyeOff, Skull, Edit2, Check, Share2, ExternalLink, X, Copy } from 'lucide-react';
+import type { Achievement, Quest, User, Status } from '../types';
+import { LayoutGrid, List, Search, Skull, Edit2, Check, Share2, ExternalLink, X, Printer, Circle, Archive, History, Trophy, Copy } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import QuestCard from '../components/QuestCard';
 import AchievementCard from '../components/AchievementCard';
+import CharacterCard from '../components/CharacterCard';
 import CardActionBar from '../components/CardActionBar';
-import DimensionBadge from '../components/DimensionBadge';
 import { QRCodeSVG } from 'qrcode.react';
 
 const Profile: React.FC = () => {
@@ -16,7 +16,7 @@ const Profile: React.FC = () => {
   const [quests, setQuests] = useState<Quest[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
-  const [curatorTab, setCuratorTab] = useState<'quests' | 'achievements'>('quests');
+  const [activeTab, setActiveTab] = useState<Status | 'all' | 'achievements'>('active');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -38,6 +38,12 @@ const Profile: React.FC = () => {
         setDisplayName(profileRes.data.display_name || profileRes.data.username);
         setQuests(questsRes.data);
         setAchievements(achievementsRes.data);
+        
+        // Auto-switch to backlog if no active quests
+        const active = questsRes.data.filter((q: Quest) => q.status === 'active');
+        if (active.length === 0 && questsRes.data.length > 0) {
+            setActiveTab('backlog');
+        }
       } catch (error) {
         console.error("Error fetching data", error);
       } finally {
@@ -46,6 +52,32 @@ const Profile: React.FC = () => {
     };
     fetchData();
   }, []);
+
+  const handleDeleteQuest = async (questId: string) => {
+      if (!confirm('Are you sure you want to delete this quest?')) return;
+      try {
+          await axios.delete(`http://localhost:8000/quests/${questId}`);
+          setQuests(quests.filter(q => q.id !== questId));
+      } catch (error) {
+          console.error("Error deleting quest", error);
+      }
+  };
+
+  const handleStatusChange = async (questId: string, newStatus: Status) => {
+      try {
+          await axios.patch(`http://localhost:8000/quests/${questId}`, { status: newStatus });
+          setQuests(quests.map(q => q.id === questId ? { ...q, status: newStatus } : q));
+          
+          // Refresh profile stats if completing
+          if (newStatus === 'completed') {
+              const profileRes = await axios.get('http://localhost:8000/profile');
+              setProfile(profileRes.data);
+              updateUser(profileRes.data);
+          }
+      } catch (error) {
+          console.error("Error updating quest status", error);
+      }
+  };
 
   const handleUpdateProfile = async () => {
     if (!profile) return;
@@ -65,34 +97,28 @@ const Profile: React.FC = () => {
     }
   };
 
-  const toggleQuestVisibility = async (e: React.MouseEvent, quest: Quest) => {
-    e.preventDefault(); // Prevent navigation
+  const handleVisibilityChange = async (id: string, type: 'quest' | 'achievement', newHidden: boolean) => {
     try {
-        const updatedQuest = { ...quest, is_hidden: !quest.is_hidden };
-        await axios.patch(`http://localhost:8000/quests/${quest.id}`, { is_hidden: updatedQuest.is_hidden });
-        setQuests(quests.map(q => q.id === quest.id ? updatedQuest : q));
+        const endpoint = type === 'quest' ? 'quests' : 'achievements';
+        await axios.patch(`http://localhost:8000/${endpoint}/${id}`, { is_hidden: newHidden });
+        
+        if (type === 'quest') {
+            setQuests(quests.map(q => q.id === id ? { ...q, is_hidden: newHidden } : q));
+        } else {
+            setAchievements(achievements.map(a => a.id === id ? { ...a, is_hidden: newHidden } : a));
+        }
     } catch (error) {
-        console.error("Error updating quest visibility", error);
-    }
-  };
-
-  const toggleAchievementVisibility = async (e: React.MouseEvent, achievement: Achievement) => {
-    e.preventDefault(); // Prevent navigation
-    try {
-        const updatedAchievement = { ...achievement, is_hidden: !achievement.is_hidden };
-        await axios.patch(`http://localhost:8000/achievements/${achievement.id}`, { is_hidden: updatedAchievement.is_hidden });
-        setAchievements(achievements.map(a => a.id === achievement.id ? updatedAchievement : a));
-    } catch (error) {
-        console.error("Error updating achievement visibility", error);
+        console.error(`Error updating ${type} visibility`, error);
     }
   };
 
   if (loading || !profile) return <div className="text-center py-10 text-gray-500 dark:text-gray-400">Loading profile...</div>;
 
   const filteredQuests = quests.filter(q => {
+    const matchesTab = activeTab === 'all' ? true : q.status === activeTab;
     const matchesSearch = q.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           (q.dimension || '').toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
+    return matchesTab && matchesSearch;
   });
 
   const filteredAchievements = achievements.filter(a => 
@@ -100,8 +126,32 @@ const Profile: React.FC = () => {
     a.context.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const tabs = [
+      { id: 'active', label: 'Active', icon: Circle, color: 'text-orange-500', count: quests.filter(q => q.status === 'active').length },
+      { id: 'backlog', label: 'Backlog', icon: Archive, color: 'text-gray-500', count: quests.filter(q => q.status === 'backlog').length },
+      { id: 'completed', label: 'History', icon: History, color: 'text-green-500', count: quests.filter(q => q.status === 'completed').length },
+      { id: 'achievements', label: 'Achievements', icon: Trophy, color: 'text-yellow-500', count: achievements.length },
+      { id: 'all', label: 'All Quests', icon: LayoutGrid, color: 'text-purple-500', count: quests.length },
+  ];
+
   return (
     <div className="space-y-6">
+      {/* Character Card Showcase */}
+      <div className="flex justify-center mb-8">
+          <div className="relative group">
+            <CharacterCard user={profile} />
+            <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                <button 
+                    onClick={() => window.open(`/print/character`, '_blank')}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-full shadow-lg hover:bg-gray-800 transition-colors"
+                >
+                    <Printer size={16} />
+                    <span>Print Card</span>
+                </button>
+            </div>
+          </div>
+      </div>
+
       {/* Character Sheet Header */}
       <div className="bg-white dark:bg-dcc-card shadow rounded-lg p-6 border dark:border-dcc-system/20 relative overflow-hidden">
         {/* Background decoration */}
@@ -185,6 +235,24 @@ const Profile: React.FC = () => {
                         <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">Achievements</div>
                     </div>
                 </div>
+
+                {/* Dimension Stats */}
+                {profile.dimension_stats && profile.dimension_stats.length > 0 && (
+                    <div className="mt-6 pt-4 border-t dark:border-gray-700/50">
+                        <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Dimension Levels</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            {profile.dimension_stats.map(stat => (
+                                <div key={stat.dimension} className="bg-gray-50 dark:bg-gray-800/50 p-2 rounded border dark:border-gray-700 flex justify-between items-center">
+                                    <span className="text-xs font-medium capitalize text-gray-700 dark:text-gray-300">{stat.dimension}</span>
+                                    <div className="text-right">
+                                        <div className="text-sm font-bold text-orange-600 dark:text-dcc-system">Lvl {stat.level}</div>
+                                        <div className="text-[10px] text-gray-400">{stat.total_xp} XP</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
       </div>
@@ -222,26 +290,43 @@ const Profile: React.FC = () => {
       ) : (
       <div className="bg-white dark:bg-dcc-card shadow rounded-lg p-6 border dark:border-dcc-system/20">
         {/* Controls Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <div className="flex flex-col xl:flex-row justify-between items-center mb-6 gap-4">
             {/* Tabs */}
-            <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
-                <button
-                    onClick={() => setCuratorTab('quests')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${curatorTab === 'quests' ? 'bg-white dark:bg-dcc-card text-orange-600 dark:text-dcc-system shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
-                >
-                    Quests
-                </button>
-                <button
-                    onClick={() => setCuratorTab('achievements')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${curatorTab === 'achievements' ? 'bg-white dark:bg-dcc-card text-orange-600 dark:text-dcc-system shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
-                >
-                    Achievements
-                </button>
+            <div className="flex flex-wrap justify-center gap-2 bg-gray-100 dark:bg-gray-800 p-1.5 rounded-lg w-full xl:w-auto">
+                {tabs.map(tab => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.id;
+                    return (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as any)}
+                            className={`
+                                flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all
+                                ${isActive 
+                                    ? 'bg-white dark:bg-dcc-card text-gray-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10' 
+                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-700/50'
+                                }
+                            `}
+                        >
+                            <Icon className={`w-4 h-4 ${isActive ? tab.color : ''}`} />
+                            <span>{tab.label}</span>
+                            <span className={`
+                                text-xs px-1.5 py-0.5 rounded-full
+                                ${isActive 
+                                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' 
+                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                                }
+                            `}>
+                                {tab.count}
+                            </span>
+                        </button>
+                    );
+                })}
             </div>
 
             {/* Search & View Toggle */}
-            <div className="flex items-center space-x-4 w-full sm:w-auto">
-                <div className="relative flex-1 sm:flex-none">
+            <div className="flex items-center space-x-4 w-full xl:w-auto justify-end">
+                <div className="relative flex-1 sm:flex-none w-full sm:w-64">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Search className="h-4 w-4 text-gray-400" />
                     </div>
@@ -253,7 +338,7 @@ const Profile: React.FC = () => {
                         className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
                     />
                 </div>
-                <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800">
+                <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 shrink-0">
                     <button
                         onClick={() => setViewMode('grid')}
                         className={`p-2 rounded-l-md ${viewMode === 'grid' ? 'bg-gray-100 dark:bg-gray-700 text-orange-600 dark:text-dcc-system' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
@@ -271,7 +356,58 @@ const Profile: React.FC = () => {
         </div>
 
         {/* Content */}
-        {curatorTab === 'quests' && (
+        {activeTab === 'achievements' ? (
+            viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
+                    {filteredAchievements.map(achievement => (
+                        <div key={achievement.id} className="flex flex-col gap-4 w-full max-w-sm items-center">
+                            <AchievementCard achievement={achievement} />
+                            <CardActionBar 
+                                type="achievement"
+                                id={achievement.id}
+                                isHidden={achievement.is_hidden}
+                                onVisibilityChange={(hidden) => handleVisibilityChange(achievement.id, 'achievement', hidden)}
+                            />
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-50 dark:bg-gray-800">
+                            <tr>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Achievement</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Context</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                            {filteredAchievements.map((achievement) => (
+                                <tr key={achievement.id}>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-yellow-100 dark:bg-yellow-900/30 rounded-full text-yellow-600 dark:text-yellow-500">
+                                                <Trophy className="h-5 w-5" />
+                                            </div>
+                                            <div className="ml-4">
+                                                <div className="text-sm font-medium text-gray-900 dark:text-white">{achievement.title}</div>
+                                                <div className="text-sm text-gray-500 dark:text-gray-400">{achievement.ai_description}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                        {new Date(achievement.date_completed).toLocaleDateString()}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                        {achievement.context}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )
+        ) : (
             viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
                     {filteredQuests.map(quest => (
@@ -285,16 +421,10 @@ const Profile: React.FC = () => {
                                 type="quest"
                                 id={quest.id}
                                 status={quest.status}
-                                isHidden={quest.is_hidden || false}
-                                onVisibilityChange={(newHidden) => {
-                                    // Use the existing toggleQuestVisibility logic but adapted
-                                    const updatedQuest = { ...quest, is_hidden: newHidden };
-                                    axios.patch(`http://localhost:8000/quests/${quest.id}`, { is_hidden: newHidden })
-                                        .then(() => {
-                                            setQuests(quests.map(q => q.id === quest.id ? updatedQuest : q));
-                                        })
-                                        .catch(err => console.error(err));
-                                }}
+                                isHidden={quest.is_hidden}
+                                onStatusChange={(status) => handleStatusChange(quest.id, status)}
+                                onDelete={() => handleDeleteQuest(quest.id)}
+                                onVisibilityChange={(hidden) => handleVisibilityChange(quest.id, 'quest', hidden)}
                             />
                         </div>
                     ))}
@@ -304,111 +434,48 @@ const Profile: React.FC = () => {
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead className="bg-gray-50 dark:bg-gray-800">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dimension</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Victory Condition</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Visibility</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quest</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dimension</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white dark:bg-dcc-card divide-y divide-gray-200 dark:divide-gray-700">
-                            {filteredQuests.map(quest => (
-                                <tr key={quest.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 ${quest.is_hidden ? 'opacity-75' : ''}`}>
+                        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                            {filteredQuests.map((quest) => (
+                                <tr key={quest.id}>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <Link to={`/quests/${quest.id}`} className="text-orange-600 dark:text-dcc-system hover:underline font-medium">
-                                            {quest.title}
-                                        </Link>
-                                        {quest.is_hidden && <span className="ml-2 text-xs text-gray-400">(Hidden)</span>}
+                                        <div className="flex items-center">
+                                            <div className="ml-4">
+                                                <div className="text-sm font-medium text-gray-900 dark:text-white">{quest.title}</div>
+                                                <div className="text-sm text-gray-500 dark:text-gray-400">{quest.victory_condition}</div>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${quest.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'}`}>
+                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                            {quest.dimension}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            ${quest.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                                              quest.status === 'active' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : 
+                                              'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'}`}>
                                             {quest.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                        <DimensionBadge dimension={quest.dimension} />
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
-                                        {quest.victory_condition}
-                                    </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button
-                                            onClick={(e) => toggleQuestVisibility(e, quest)}
-                                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                                            title={quest.is_hidden ? "Show on public profile" : "Hide from public profile"}
-                                        >
-                                            {quest.is_hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )
-        )}
-
-        {curatorTab === 'achievements' && (
-            viewMode === 'grid' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
-                    {filteredAchievements.map((ach: Achievement) => (
-                        <div key={ach.id} className="flex flex-col gap-4 w-full max-w-sm items-center">
-                            <AchievementCard 
-                                achievement={ach} 
-                                username={profile?.display_name || profile?.username}
-                                questTitle={quests.find(q => q.id === ach.quest_id)?.title}
-                                className={ach.is_hidden ? 'opacity-60 grayscale' : ''} 
-                            />
-                            <CardActionBar 
-                                type="achievement"
-                                id={ach.id}
-                                isHidden={ach.is_hidden || false}
-                                onVisibilityChange={(newHidden) => {
-                                    const updatedAchievement = { ...ach, is_hidden: newHidden };
-                                    axios.patch(`http://localhost:8000/achievements/${ach.id}`, { is_hidden: newHidden })
-                                        .then(() => {
-                                            setAchievements(achievements.map(a => a.id === ach.id ? updatedAchievement : a));
-                                        })
-                                        .catch(err => console.error(err));
-                                }}
-                            />
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead className="bg-gray-50 dark:bg-gray-800">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Context</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Visibility</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white dark:bg-dcc-card divide-y divide-gray-200 dark:divide-gray-700">
-                            {filteredAchievements.map(ach => (
-                                <tr key={ach.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 ${ach.is_hidden ? 'opacity-75' : ''}`}>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <Link to={`/achievements/${ach.id}`} className="text-orange-600 dark:text-dcc-system hover:underline font-bold">
-                                            {ach.title}
-                                        </Link>
-                                        {ach.is_hidden && <span className="ml-2 text-xs text-gray-400">(Hidden)</span>}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">
-                                        {new Date(ach.date_completed).toLocaleDateString()}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
-                                        {ach.context}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button
-                                            onClick={(e) => toggleAchievementVisibility(e, ach)}
-                                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                                            title={ach.is_hidden ? "Show on public profile" : "Hide from public profile"}
-                                        >
-                                            {ach.is_hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                        </button>
+                                        <div className="flex justify-end gap-2">
+                                            <CardActionBar 
+                                                type="quest"
+                                                id={quest.id}
+                                                status={quest.status}
+                                                isHidden={quest.is_hidden}
+                                                onStatusChange={(status) => handleStatusChange(quest.id, status)}
+                                                onDelete={() => handleDeleteQuest(quest.id)}
+                                                onVisibilityChange={(hidden) => handleVisibilityChange(quest.id, 'quest', hidden)}
+                                            />
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

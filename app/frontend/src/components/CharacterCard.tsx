@@ -1,0 +1,208 @@
+import React, { useState } from 'react';
+import type { User, Dimension } from '../types';
+import { dimensionColors } from '../utils/colors';
+import { getDimensionIcon } from '../utils/dimensionIcons';
+
+interface CharacterCardProps {
+    user: User;
+    className?: string;
+    forceFace?: 'front' | 'back';
+}
+
+const CharacterCard: React.FC<CharacterCardProps> = ({ 
+    user, 
+    className = '',
+    forceFace
+}) => {
+    const [isFlipped, setIsFlipped] = useState(false);
+    
+    // Calculate Character Level (min of all dimension levels, or just user.level)
+    // For now, use user.level or 1
+    const level = user.level || 1;
+    
+    const handleFlip = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!forceFace) {
+            setIsFlipped(!isFlipped);
+        }
+    };
+
+    const dimensions: Dimension[] = ['intellectual', 'physical', 'financial', 'environmental', 'vocational', 'social', 'emotional', 'spiritual'];
+    
+    // Prepare data for Radar Chart
+    const stats = user.dimension_stats || [];
+    const maxLevel = Math.max(...stats.map(s => s.level), 10); // Scale based on max level, min 10
+    
+    const getPoint = (value: number, index: number, total: number, radius: number) => {
+        const angle = (Math.PI * 2 * index) / total - Math.PI / 2;
+        const x = radius + Math.cos(angle) * (radius * (value / maxLevel));
+        const y = radius + Math.sin(angle) * (radius * (value / maxLevel));
+        return `${x},${y}`;
+    };
+
+    const radarPoints = dimensions.map((dim, i) => {
+        const stat = stats.find(s => s.dimension === dim);
+        const val = stat ? stat.level : 1;
+        return getPoint(val, i, dimensions.length, 50);
+    }).join(' ');
+
+    const BackContent = (
+        <div 
+            onClick={handleFlip}
+            className={`w-full h-full rounded-2xl overflow-hidden bg-gray-900 border-[12px] border-gray-800 shadow-2xl flex flex-col relative cursor-pointer`}
+        >
+            {/* Header */}
+            <div className="bg-gray-800 p-4 border-b-4 border-gray-700 text-center">
+                <h3 className="font-['Cinzel'] font-black text-xl text-gray-300 tracking-widest">STATS</h3>
+            </div>
+
+            {/* Body - Radar Chart */}
+            <div className="flex-1 flex flex-col items-center justify-center p-4 relative">
+                <div className="w-48 h-48 relative">
+                    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+                        {/* Background Grid */}
+                        {[0.2, 0.4, 0.6, 0.8, 1].map(scale => (
+                            <polygon 
+                                key={scale}
+                                points={dimensions.map((_, i) => getPoint(maxLevel * scale, i, dimensions.length, 50)).join(' ')}
+                                fill="none"
+                                stroke="#374151"
+                                strokeWidth="0.5"
+                            />
+                        ))}
+                        
+                        {/* Axes */}
+                        {dimensions.map((_, i) => (
+                            <line 
+                                key={i}
+                                x1="50" y1="50"
+                                x2={getPoint(maxLevel, i, dimensions.length, 50).split(',')[0]}
+                                y2={getPoint(maxLevel, i, dimensions.length, 50).split(',')[1]}
+                                stroke="#374151"
+                                strokeWidth="0.5"
+                            />
+                        ))}
+
+                        {/* Data */}
+                        <polygon 
+                            points={radarPoints}
+                            fill="rgba(249, 115, 22, 0.5)"
+                            stroke="#f97316"
+                            strokeWidth="2"
+                        />
+                    </svg>
+                    
+                    {/* Labels */}
+                    {dimensions.map((dim, i) => {
+                        const angle = (Math.PI * 2 * i) / dimensions.length - Math.PI / 2;
+                        const radius = 65; // Push labels out
+                        const x = 50 + Math.cos(angle) * radius;
+                        const y = 50 + Math.sin(angle) * radius;
+                        const Icon = getDimensionIcon(dim);
+                        const color = dimensionColors[dim].text400;
+                        
+                        return (
+                            <div 
+                                key={dim}
+                                className={`absolute flex items-center justify-center w-6 h-6 rounded-full bg-gray-800 border border-gray-700 ${color}`}
+                                style={{ 
+                                    left: `${x}%`, 
+                                    top: `${y}%`, 
+                                    transform: 'translate(-50%, -50%)' 
+                                }}
+                                title={dim}
+                            >
+                                <Icon size={12} />
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="bg-gray-800 p-3 border-t-4 border-gray-700 text-center">
+                <div className="grid grid-cols-2 gap-2 text-[10px] text-gray-400">
+                    {stats.slice(0, 4).map(s => (
+                        <div key={s.dimension} className="flex justify-between">
+                            <span className="uppercase">{s.dimension.slice(0,3)}</span>
+                            <span className="text-white">Lvl {s.level}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+
+    if (forceFace === 'back') return BackContent;
+
+    const FrontContent = (
+        <div 
+            onClick={handleFlip}
+            className={`w-full h-full rounded-2xl overflow-hidden bg-gray-900 text-white flex flex-col border-[12px] border-orange-900 shadow-2xl relative cursor-pointer`}
+        >
+            {/* Header */}
+            <div className="bg-gradient-to-b from-orange-800 to-orange-900 p-4 border-b-4 border-orange-700 relative z-10 text-center">
+                <h3 className="font-['Cinzel'] font-bold text-2xl text-white drop-shadow-md">
+                    CRAWLER
+                </h3>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 relative bg-gray-800 p-4 flex flex-col items-center">
+                {/* Avatar Placeholder */}
+                <div className="w-32 h-32 rounded-full bg-gray-700 border-4 border-orange-500 mb-4 flex items-center justify-center overflow-hidden">
+                    <span className="text-4xl">👤</span>
+                </div>
+                
+                <h2 className="text-xl font-bold text-orange-400 mb-1">{user.display_name || user.username}</h2>
+                <div className="text-xs text-gray-400 uppercase tracking-widest mb-4">Level {level}</div>
+                
+                <div className="w-full bg-gray-900 rounded-full h-4 border border-gray-700 relative overflow-hidden">
+                    <div 
+                        className="absolute top-0 left-0 h-full bg-orange-600"
+                        style={{ width: `${(level % 1) * 100}%` }} // Placeholder for progress to next level
+                    ></div>
+                    <div className="absolute inset-0 flex items-center justify-center text-[8px] font-bold tracking-wider text-white/80">
+                        PROGRESS TO NEXT LEVEL
+                    </div>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="bg-gray-900 p-4 border-t-4 border-orange-900 relative z-10 flex justify-between items-center">
+                <div className="text-center">
+                    <div className="text-xs text-gray-500 uppercase">Quests</div>
+                    <div className="text-lg font-bold text-white">{user.stats?.quests_completed || 0}</div>
+                </div>
+                <div className="text-center">
+                    <div className="text-xs text-gray-500 uppercase">Achiev.</div>
+                    <div className="text-lg font-bold text-white">{user.stats?.achievements_unlocked || 0}</div>
+                </div>
+                <div className="text-center">
+                    <div className="text-xs text-gray-500 uppercase">Active</div>
+                    <div className="text-lg font-bold text-white">{user.stats?.quests_active || 0}</div>
+                </div>
+            </div>
+        </div>
+    );
+
+    if (forceFace === 'front') return FrontContent;
+
+    return (
+        <div className={`perspective-1000 w-[320px] h-[480px] ${className}`}>
+            <div className={`relative w-full h-full transition-transform duration-700 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
+                {/* Front Face */}
+                <div className="absolute w-full h-full backface-hidden">
+                    {FrontContent}
+                </div>
+
+                {/* Back Face */}
+                <div className="absolute w-full h-full backface-hidden rotate-y-180" style={{ transform: 'rotateY(180deg)' }}>
+                    {BackContent}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default CharacterCard;

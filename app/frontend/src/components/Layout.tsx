@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
-import { LayoutDashboard, PlusCircle, Trophy, User, Moon, Sun, LogOut, Settings, Printer } from 'lucide-react';
+import { PlusCircle, Trophy, User, Moon, Sun, LogOut, Settings, Printer } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -21,8 +21,8 @@ const Layout: React.FC = () => {
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                 <Link to="/" className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:border-dcc-system hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
-                  <LayoutDashboard className="w-4 h-4 mr-2" />
-                  Dashboard
+                  <User className="w-4 h-4 mr-2" />
+                  Character
                 </Link>
                 <Link to="/quests/new" className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:border-dcc-system hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
                   <PlusCircle className="w-4 h-4 mr-2" />
@@ -31,10 +31,6 @@ const Layout: React.FC = () => {
                 <Link to="/achievements/new" className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:border-dcc-system hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
                   <Trophy className="w-4 h-4 mr-2" />
                   New Achievement
-                </Link>
-                <Link to="/profile" className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:border-dcc-system hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
-                  <User className="w-4 h-4 mr-2" />
-                  Character
                 </Link>
               </div>
             </div>
@@ -72,10 +68,9 @@ const Layout: React.FC = () => {
         </div>
         {/* Mobile menu */}
         <div className="sm:hidden flex justify-around py-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-dcc-card">
-            <Link to="/" className="p-2 text-gray-500 dark:text-gray-400"><LayoutDashboard /></Link>
+            <Link to="/" className="p-2 text-gray-500 dark:text-gray-400"><User /></Link>
             <Link to="/quests/new" className="p-2 text-gray-500 dark:text-gray-400"><PlusCircle /></Link>
             <Link to="/achievements/new" className="p-2 text-gray-500 dark:text-gray-400"><Trophy /></Link>
-            <Link to="/profile" className="p-2 text-gray-500 dark:text-gray-400"><User /></Link>
             <Link to="/settings" className="p-2 text-gray-500 dark:text-gray-400"><Settings /></Link>
         </div>
       </nav>

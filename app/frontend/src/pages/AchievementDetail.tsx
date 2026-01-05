@@ -149,7 +149,6 @@ const AchievementDetail: React.FC = () => {
                 questTitle={linkedQuest?.title}
                 username={!isPublic ? (user?.display_name || user?.username) : undefined}
                 forceFace="front"
-                hideActions
             />
         </div>
         <div className="transform scale-100 sm:scale-110">
@@ -158,7 +157,6 @@ const AchievementDetail: React.FC = () => {
                 questTitle={linkedQuest?.title}
                 username={!isPublic ? (user?.display_name || user?.username) : undefined}
                 forceFace="back"
-                hideActions
             />
         </div>
       </div>

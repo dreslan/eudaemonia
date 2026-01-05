@@ -14,8 +14,18 @@ const NewQuest: React.FC = () => {
     dimension: null,
     status: 'backlog',
     tags: [],
-    victory_condition: ''
+    victory_condition: '',
+    difficulty: 1,
+    xp_reward: 10
   });
+
+  const difficultyMap: Record<number, { label: string, xp: number, desc: string }> = {
+    1: { label: 'Common', xp: 10, desc: 'Daily habit or < 1 hour' },
+    2: { label: 'Uncommon', xp: 50, desc: 'Weekly habit or 1-5 hours' },
+    3: { label: 'Rare', xp: 250, desc: 'Monthly goal or 20+ hours' },
+    4: { label: 'Epic', xp: 1000, desc: 'Multi-month milestone' },
+    5: { label: 'Legendary', xp: 5000, desc: 'Year-long achievement' },
+  };
 
   const dccQuotes: Record<string, string> = {
     intellectual: "Trying to grow a wrinkle on that smooth brain of yours? How ambitious. Don't hurt yourself thinking too hard.",
@@ -73,7 +83,16 @@ const NewQuest: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'difficulty') {
+        const diff = parseInt(value);
+        setFormData(prev => ({ 
+            ...prev, 
+            difficulty: diff,
+            xp_reward: difficultyMap[diff]?.xp || 10
+        }));
+    } else {
+        setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -129,6 +148,25 @@ const NewQuest: React.FC = () => {
                 </select>
                 <p className="mt-2 text-xs text-orange-600 dark:text-dcc-system italic border-l-2 border-orange-300 dark:border-dcc-system pl-2">
                     "AI: {dccQuotes[formData.dimension || 'default']}"
+                </p>
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Difficulty</label>
+                <select
+                    name="difficulty"
+                    value={formData.difficulty || 1}
+                    onChange={handleChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-2 border dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                >
+                    {Object.entries(difficultyMap).map(([level, info]) => (
+                        <option key={level} value={level}>
+                            {info.label} (Rank {level}) - {info.xp} XP
+                        </option>
+                    ))}
+                </select>
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    {difficultyMap[formData.difficulty || 1]?.desc}
                 </p>
             </div>
         </div>
