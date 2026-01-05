@@ -17,6 +17,7 @@ class UserDB(Base):
 
     quests = relationship("QuestDB", back_populates="user")
     achievements = relationship("AchievementDB", back_populates="user")
+    dimension_stats = relationship("UserDimensionStatsDB", back_populates="user")
 
 class QuestDB(Base):
     __tablename__ = "quests"
@@ -32,6 +33,8 @@ class QuestDB(Base):
     due_date = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     progress = Column(Integer, default=0)
+    difficulty = Column(Integer, default=1)
+    xp_reward = Column(Integer, default=10)
 
     user = relationship("UserDB", back_populates="quests")
 
@@ -52,3 +55,14 @@ class AchievementDB(Base):
     quest_id = Column(String, nullable=True)
 
     user = relationship("UserDB", back_populates="achievements")
+
+class UserDimensionStatsDB(Base):
+    __tablename__ = "user_dimension_stats"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(String, ForeignKey("users.id"))
+    dimension = Column(String)
+    total_xp = Column(Integer, default=0)
+    level = Column(Integer, default=1)
+
+    user = relationship("UserDB", back_populates="dimension_stats")

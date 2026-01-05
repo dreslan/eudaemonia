@@ -3,6 +3,7 @@ from models import UserInDB, Quest, Achievement
 from auth import get_password_hash
 from datetime import datetime, timedelta
 import uuid
+import random
 
 def seed():
     print("Seeding data...")
@@ -33,7 +34,7 @@ def seed():
             disabled=False
         )
         db.create_user(veteran_user)
-        # Re-fetch to ensure we have the ID if needed (though create_user returns it with ID)
+        veteran_user = db.get_user(veteran_username) # Fetch to get ID
     else:
         print(f"User {veteran_username} already exists.")
 
@@ -41,159 +42,99 @@ def seed():
     if veteran_user:
         user_id = veteran_user.id
         
-        print("Ensuring dimension quests for veteran...")
+        print("Seeding quests for veteran...")
         
-        dimension_quests = [
-            {
-                "title": "Smash the Goblin Horde",
-                "dimension": "physical",
-                "status": "active",
-                "tags": ["combat", "strength"],
-                "victory_condition": "Complete 50 pushups in one set"
-            },
-            {
-                "title": "Decipher the Ancient Scroll",
-                "dimension": "intellectual",
-                "status": "active",
-                "tags": ["study", "intelligence"],
-                "victory_condition": "Read a non-fiction book this week"
-            },
-            {
-                "title": "Hoard Gold Coins",
-                "dimension": "financial",
-                "status": "active",
-                "tags": ["wealth", "saving"],
-                "victory_condition": "Save $500 this month"
-            },
-            {
-                "title": "Purify the Poisoned Swamp",
-                "dimension": "environmental",
-                "status": "active",
-                "tags": ["nature", "cleaning"],
-                "victory_condition": "Clean up the local park"
-            },
-            {
-                "title": "Level Up Class",
-                "dimension": "vocational",
-                "status": "active",
-                "tags": ["career", "promotion"],
-                "victory_condition": "Complete the certification course"
-            },
-            {
-                "title": "Form a Party",
-                "dimension": "social",
-                "status": "active",
-                "tags": ["charisma", "friends"],
-                "victory_condition": "Host a board game night"
-            },
-            {
-                "title": "Conquer Fear",
-                "dimension": "emotional",
-                "status": "active",
-                "tags": ["willpower", "mental-health"],
-                "victory_condition": "Meditate for 10 minutes daily"
-            },
-            {
-                "title": "Commune with the AI Gods",
-                "dimension": "spiritual",
-                "status": "active",
-                "tags": ["faith", "reflection"],
-                "victory_condition": "Journal about your purpose"
-            }
+        difficulty_map = {
+            1: 10,
+            2: 50,
+            3: 250,
+            4: 1000,
+            5: 5000
+        }
+
+        quests_data = [
+            # Intellectual
+            {"title": "Read 'The Art of War'", "dimension": "intellectual", "difficulty": 1, "status": "completed"},
+            {"title": "Learn Basic Python", "dimension": "intellectual", "difficulty": 2, "status": "completed"},
+            {"title": "Master Quantum Physics", "dimension": "intellectual", "difficulty": 5, "status": "active"},
+            
+            # Physical
+            {"title": "Morning Stretch", "dimension": "physical", "difficulty": 1, "status": "completed"},
+            {"title": "Run a 5k", "dimension": "physical", "difficulty": 2, "status": "completed"},
+            {"title": "Marathon Training", "dimension": "physical", "difficulty": 3, "status": "active"},
+            {"title": "Ironman Triathlon", "dimension": "physical", "difficulty": 5, "status": "backlog"},
+
+            # Financial
+            {"title": "Skip Coffee", "dimension": "financial", "difficulty": 1, "status": "completed"},
+            {"title": "Setup 401k", "dimension": "financial", "difficulty": 2, "status": "completed"},
+            {"title": "Save 6 Months Expenses", "dimension": "financial", "difficulty": 3, "status": "active"},
+            {"title": "Become a Millionaire", "dimension": "financial", "difficulty": 5, "status": "backlog"},
+
+            # Environmental
+            {"title": "Recycle Cans", "dimension": "environmental", "difficulty": 1, "status": "completed"},
+            {"title": "Plant a Tree", "dimension": "environmental", "difficulty": 2, "status": "completed"},
+            {"title": "Go Zero Waste", "dimension": "environmental", "difficulty": 4, "status": "active"},
+
+            # Vocational
+            {"title": "Update Resume", "dimension": "vocational", "difficulty": 1, "status": "completed"},
+            {"title": "Get a Certification", "dimension": "vocational", "difficulty": 2, "status": "completed"},
+            {"title": "Lead a Major Project", "dimension": "vocational", "difficulty": 3, "status": "active"},
+            {"title": "Become CEO", "dimension": "vocational", "difficulty": 5, "status": "backlog"},
+
+            # Social
+            {"title": "Call Mom", "dimension": "social", "difficulty": 1, "status": "completed"},
+            {"title": "Host Dinner Party", "dimension": "social", "difficulty": 2, "status": "completed"},
+            {"title": "Public Speaking Event", "dimension": "social", "difficulty": 3, "status": "active"},
+
+            # Emotional
+            {"title": "Deep Breath", "dimension": "emotional", "difficulty": 1, "status": "completed"},
+            {"title": "Journaling Habit", "dimension": "emotional", "difficulty": 2, "status": "completed"},
+            {"title": "Therapy Sessions", "dimension": "emotional", "difficulty": 3, "status": "active"},
+
+            # Spiritual
+            {"title": "Meditate 5 Mins", "dimension": "spiritual", "difficulty": 1, "status": "completed"},
+            {"title": "Read Sacred Texts", "dimension": "spiritual", "difficulty": 2, "status": "completed"},
+            {"title": "Silent Retreat", "dimension": "spiritual", "difficulty": 4, "status": "active"},
         ]
 
         existing_quests = db.get_quests(user_id)
         existing_titles = [q['title'] for q in existing_quests]
 
-        for q_data in dimension_quests:
-            if q_data['title'] not in existing_titles:
-                print(f"Adding quest: {q_data['title']}")
-                quest = Quest(
+        for q in quests_data:
+            if q['title'] not in existing_titles:
+                print(f"Adding quest: {q['title']} ({q['status']})")
+                xp = difficulty_map.get(q['difficulty'], 10)
+                
+                new_quest = Quest(
                     user_id=user_id,
-                    title=q_data['title'],
-                    dimension=q_data['dimension'],
-                    status=q_data['status'],
-                    tags=q_data['tags'],
-                    victory_condition=q_data['victory_condition']
+                    title=q['title'],
+                    dimension=q['dimension'],
+                    status=q['status'],
+                    difficulty=q['difficulty'],
+                    xp_reward=xp,
+                    tags=[q['dimension'], "seeded"],
+                    victory_condition=f"Complete the task: {q['title']}"
                 )
-                db.add_quest(quest)
+                db.add_quest(new_quest)
+
+                if q['status'] == 'completed':
+                    # Award XP
+                    db.update_user_dimension_stats(user_id, q['dimension'], xp)
+                    
+                    # Add Achievement
+                    ach = Achievement(
+                        user_id=user_id,
+                        title=f"Completed: {q['title']}",
+                        context=f"Finished the quest {q['title']}",
+                        date_completed=datetime.now() - timedelta(days=random.randint(1, 30)),
+                        dimension=q['dimension'],
+                        quest_id=new_quest.id,
+                        ai_description=f"You did it. {q['title']} is done. Are you happy now?",
+                        ai_reward=f"+{xp} XP"
+                    )
+                    db.add_achievement(ach)
             else:
-                print(f"Quest already exists: {q_data['title']}")
-
-        # Original seed logic for achievements (kept for compatibility if needed, but simplified)
-        existing_achievements = db.get_achievements(user_id)
-        if not existing_achievements:
-            print("Adding achievements for veteran...")
-            
-            # Achievement linked to q3
-            # We need q3's ID. Since we just added it, we can't easily get it back without query or keeping ref.
-            # For simplicity, we'll just create an unlinked achievement or query for q3.
-            
-            a1 = Achievement(
-                user_id=user_id,
-                title="Hero of the Village",
-                context="Saved the village from a rat infestation.",
-                date_completed=datetime.now() - timedelta(days=5),
-                dimension="social",
-                ai_description="You killed some rats. The villagers are mildly impressed.",
-                ai_reward="+10 Reputation"
-            )
-            db.add_achievement(a1)
-
-            # Achievement with no dimension
-            a2 = Achievement(
-                user_id=user_id,
-                title="Found a Shiny Rock",
-                context="I picked up a rock. It was shiny.",
-                date_completed=datetime.now(),
-                dimension=None,
-                ai_description="You picked up a rock. Fascinating.",
-                ai_reward="A rock."
-            )
-            db.add_achievement(a2)
-            # But wait, db.add_quest returns the quest object, which has the ID.
-            # However, in the block above I didn't capture the return values properly if I wanted to use them here.
-            # Let's just fetch quests again to find "Form a Party"
-            quests = db.get_quests(user_id)
-            q3_id = next((q['id'] for q in quests if q['title'] == "Form a Party"), None)
-
-            if q3_id:
-                a_linked = Achievement(
-                    user_id=user_id,
-                    title="Quest Complete: Form a Party",
-                    context="Recruited a diverse group of adventurers at the local tavern.",
-                    date_completed=datetime.now() - timedelta(days=2),
-                    dimension="social",
-                    quest_id=q3_id,
-                    ai_description="NEW ACHIEVEMENT! You found friends. Or at least people who tolerate you for loot.",
-                    ai_reward="+10 Charisma"
-                )
-                db.add_achievement(a_linked)
-
-            # Standalone Achievement
-            a2 = Achievement(
-                user_id=user_id,
-                title="First Blood",
-                context="Killed a rat in the sewer.",
-                date_completed=datetime.now() - timedelta(days=5),
-                dimension="physical",
-                ai_description="CONGRATULATIONS, CRAWLER! You murdered a rodent. You are truly a force to be reckoned with.",
-                ai_reward="A rat tail. Don't eat it."
-            )
-            db.add_achievement(a2)
-            
-            a3 = Achievement(
-                user_id=user_id,
-                title="Shiny Object Syndrome",
-                context="Collected 100 useless shiny rocks.",
-                date_completed=datetime.now() - timedelta(days=1),
-                dimension="financial",
-                ai_description="OH LOOK, YOU DID SOMETHING. You filled your inventory with garbage. Typical.",
-                ai_reward="Back pain."
-            )
-            db.add_achievement(a3)
-        else:
-            print("Achievements for veteran already exist.")
+                print(f"Skipping existing quest: {q['title']}")
 
     print("Seeding complete.")
 

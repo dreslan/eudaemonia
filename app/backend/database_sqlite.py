@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from sql_models import Base, UserDB, QuestDB, AchievementDB
-from models import Quest, Achievement, UserInDB
+from sql_models import Base, UserDB, QuestDB, AchievementDB, UserDimensionStatsDB
+from models import Quest, Achievement, UserInDB, UserDimensionStats
 from typing import List, Dict, Any, Optional
 import json
 import os
@@ -67,7 +67,9 @@ class SqliteDatabase:
                 is_hidden=quest.is_hidden,
                 due_date=quest.due_date,
                 created_at=quest.created_at,
-                progress=quest.progress
+                progress=quest.progress,
+                difficulty=quest.difficulty,
+                xp_reward=quest.xp_reward
             )
             session.add(quest_db)
             session.commit()
@@ -135,6 +137,8 @@ class SqliteDatabase:
                 quest_db.is_hidden = quest.is_hidden
                 quest_db.due_date = quest.due_date
                 quest_db.progress = quest.progress
+                quest_db.difficulty = quest.difficulty
+                quest_db.xp_reward = quest.xp_reward
                 # created_at and user_id should not change
                 session.commit()
                 session.refresh(quest_db)
@@ -148,8 +152,34 @@ class SqliteDatabase:
         try:
             user = session.query(UserDB).filter(UserDB.username == username).first()
             if user:
-                return UserInDB(**self._to_dict(user))
+                user_dict = self._to_dict(user)
+                user_dict['dimension_stats'] = [
+                    UserDimensionStats(dimension=s.dimension, total_xp=s.total_xp, level=s.level)
+                    for s in user.dimension_stats
+                ]
+                return UserInDB(**user_dict)
             return None
+        finally:
+            session.close()
+
+    def update_user_dimension_stats(self, user_id: str, dimension: str, xp_gained: int):
+        session = self.SessionLocal()
+        try:
+            stats = session.query(UserDimensionStatsDB).filter(
+                UserDimensionStatsDB.user_id == user_id,
+                UserDimensionStatsDB.dimension == dimension
+            ).first()
+            
+            if not stats:
+                stats = UserDimensionStatsDB(user_id=user_id, dimension=dimension, total_xp=0, level=1)
+                session.add(stats)
+            
+            stats.total_xp += xp_gained
+            # Leveling logic: Level = 1 + floor(Total XP / 100)
+            stats.level = 1 + (stats.total_xp // 100)
+            
+            session.commit()
+            return stats
         finally:
             session.close()
 

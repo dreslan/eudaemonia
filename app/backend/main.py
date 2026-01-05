@@ -161,6 +161,14 @@ def update_quest(quest_id: str, update_data: QuestUpdate, current_user: UserInDB
     
     # Check for completion
     if updated_quest.status == 'completed' and current_quest.status != 'completed':
+        # Award XP
+        if updated_quest.dimension:
+             db.update_user_dimension_stats(
+                user_id=current_user.id,
+                dimension=updated_quest.dimension,
+                xp_gained=updated_quest.xp_reward or 10
+            )
+
         # Auto-generate achievement
         achievement_data = AchievementCreate(
             title=f"Quest Complete: {updated_quest.title}",
@@ -334,17 +342,26 @@ def get_profile(current_user: UserInDB = Depends(get_current_user)):
     achievements = db.get_achievements(user_id=current_user.id)
     completed_quests = [q for q in quests if q['status'] == 'completed']
     
+    # Calculate Character Level
+    character_level = 1
+    if current_user.dimension_stats:
+        # Check if all 8 dimensions are present
+        unique_dims = set(s.dimension for s in current_user.dimension_stats)
+        if len(unique_dims) >= 8:
+             character_level = min(s.level for s in current_user.dimension_stats)
+    
     return {
         "id": current_user.id,
         "username": current_user.username,
         "display_name": current_user.display_name,
         "openai_api_key": current_user.openai_api_key,
-        "level": 1 + (len(completed_quests) // 5),
+        "level": character_level,
         "stats": {
             "quests_active": len([q for q in quests if q['status'] == 'active']),
             "quests_completed": len(completed_quests),
             "achievements_unlocked": len(achievements)
         },
+        "dimension_stats": current_user.dimension_stats,
         "recent_achievements": achievements[-5:]
     }
 

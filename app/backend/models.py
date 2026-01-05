@@ -11,6 +11,8 @@ class QuestBase(BaseModel):
     victory_condition: Optional[str] = None
     is_hidden: bool = False
     due_date: Optional[datetime] = None
+    difficulty: int = 1
+    xp_reward: int = 10
 
 class QuestCreate(QuestBase):
     pass
@@ -22,12 +24,19 @@ class QuestUpdate(BaseModel):
     victory_condition: Optional[str] = None
     is_hidden: Optional[bool] = None
     due_date: Optional[datetime] = None
+    difficulty: Optional[int] = None
+    xp_reward: Optional[int] = None
 
 class Quest(QuestBase):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     created_at: datetime = Field(default_factory=datetime.now)
     progress: int = 0
     user_id: str
+
+class UserDimensionStats(BaseModel):
+    dimension: str
+    total_xp: int
+    level: int
 
 class AchievementBase(BaseModel):
     title: str = Field(..., max_length=80)
@@ -73,6 +82,7 @@ class User(UserBase):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     disabled: bool = False
     openai_api_key: Optional[str] = None
+    dimension_stats: List[UserDimensionStats] = []
 
 class UserInDB(User):
     hashed_password: str
