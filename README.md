@@ -2,7 +2,7 @@
 
 > *"Happiness depends upon ourselves."* — Aristotle
 
-**Eudaemonia** is a goal tracker dressed up as an RPG collectible Card Game. The game, if you play it as a game, attempts to guide you toward [https://en.wikipedia.org/wiki/Eudaimonia](eudaimonia)—a state of flourishing and well-being. 
+**Eudaemonia** is a goal tracker dressed up as an RPG collectible Card Game. The game, if you play it as a game, attempts to guide you toward [https://en.wikipedia.org/wiki/Eudaemonia](eudaemonia)—a state of flourishing and well-being. 
 
 At the center of the game is the "System AI," who is repsonsible for transforming your goals into Quests and delivering punchy one liners along the way as you complete primarily self appointed tasks and collect achievements.
 
