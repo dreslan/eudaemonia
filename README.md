@@ -115,4 +115,4 @@ To boot up the System and begin your pursuit:
 The System AI is watching. Neglect your dimensions at your own peril.
 
 ---
-*EudaimonAI v2.0 - "The Good Life Protocol"*
+*Eudaemonia v2.0 - "The Good Life Protocol"*
